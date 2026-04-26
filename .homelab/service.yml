@@ -14,5 +14,5 @@ services:
                 NEXT_PUBLIC_FIREBASE_APP_ID: ${NEXT_PUBLIC_FIREBASE_APP_ID}
                 NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: ${NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID}
         ports:
-            - "67678:3000"
+            - "6768:3000"
         restart: unless-stopped
