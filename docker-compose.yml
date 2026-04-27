@@ -13,3 +13,6 @@ services:
     ports:
       - "3000:3000"
     restart: unless-stopped
+    environment:
+      # Force Node.js to prefer IPv4 — prevents ENETUNREACH when DNS returns IPv6 inside Docker
+      NODE_OPTIONS: "--dns-result-order=ipv4first"

@@ -11,3 +11,5 @@ services:
         ports:
             - "6768:3000"
         restart: unless-stopped
+        environment:
+            NODE_OPTIONS: "--dns-result-order=ipv4first"
