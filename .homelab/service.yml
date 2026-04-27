@@ -13,6 +13,8 @@ services:
                 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}
                 NEXT_PUBLIC_FIREBASE_APP_ID: ${NEXT_PUBLIC_FIREBASE_APP_ID}
                 NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: ${NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID}
+                SF6_COOKIE: ${SF6_COOKIE}
+                DATABASE_URL: ${DATABASE_URL}
         ports:
             - "6768:3000"
         restart: unless-stopped
