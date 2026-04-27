@@ -9,6 +9,7 @@ import {
 	rankImg,
 	VS_IMG,
 } from "../lib/types";
+import StatCard from "./ui/StatCard";
 
 function PlayerSide({
 	info,
@@ -23,37 +24,29 @@ function PlayerSide({
 
 	const stats = (
 		<ul className={`flex items-center gap-1.5 ${side === "right" ? "flex-row-reverse" : ""}`}>
-			<li className='relative w-5 h-5 shrink-0'>
-				<Image
-					src={controlImg(info.battle_input_type)}
-					alt=''
-					fill
-					className='object-contain'
-					unoptimized
-				/>
+			<li className="relative w-5 h-5 shrink-0">
+				<Image src={controlImg(info.battle_input_type)} alt="" fill className="object-contain" unoptimized />
 			</li>
-			<li className='relative w-10 h-5 shrink-0'>
+			<li className="relative w-10 h-5 shrink-0">
 				<Image
 					src={rankImg(info.league_rank)}
 					alt={`rank ${info.league_rank}`}
 					fill
-					className='object-contain'
+					className="object-contain"
 					unoptimized
 				/>
 			</li>
-			<li className='text-xs font-bold whitespace-nowrap'>
-				{info.league_point.toLocaleString()} LP
-			</li>
+			<li className="text-xs font-bold whitespace-nowrap">{info.league_point.toLocaleString("pt-BR")} LP</li>
 		</ul>
 	);
 
 	const charArt = (
-		<div className='relative w-28 h-28 shrink-0'>
+		<div className="relative w-20 h-20 sm:w-28 sm:h-28 shrink-0">
 			<Image
 				src={characterImg(info.playing_character_tool_name, charSide)}
 				alt={info.playing_character_name}
 				fill
-				className='object-contain'
+				className="object-contain"
 				unoptimized
 			/>
 		</div>
@@ -70,27 +63,21 @@ function PlayerSide({
 	);
 }
 
-function PlayerName({
-	info,
-	align,
-}: {
-	info: SF6PlayerInfo;
-	align: "left" | "right";
-}) {
+function PlayerName({ info, align }: { info: SF6PlayerInfo; align: "left" | "right" }) {
 	return (
 		<p
 			className={`flex items-center gap-1 text-sm font-semibold min-w-0 ${align === "right" ? "flex-row-reverse" : ""}`}
 		>
-			<span className='relative w-4 h-4 shrink-0 inline-block'>
+			<span className="relative w-4 h-4 shrink-0 inline-block">
 				<Image
 					src={platformImg(info.player.platform_tool_name)}
 					alt={info.player.platform_name}
 					fill
-					className='object-contain'
+					className="object-contain"
 					unoptimized
 				/>
 			</span>
-			<span className='truncate'>{info.player.fighter_id}</span>
+			<span className="truncate">{info.player.fighter_id}</span>
 		</p>
 	);
 }
@@ -109,38 +96,38 @@ export default function BattleCard({ replay }: { replay: SF6Replay }) {
 	});
 
 	return (
-		<div className='card bg-base-200 shadow border border-base-300'>
-			<div className='card-body p-3 gap-2'>
-				{/* Names + date */}
-				<div className='flex items-center justify-between gap-2'>
-					<PlayerName info={replay.player1_info} align='left' />
-					<span className='text-xs text-base-content/40 shrink-0'>{date}</span>
-					<PlayerName info={replay.player2_info} align='right' />
-				</div>
-
-				{/* Battle row */}
-				<div className='flex items-center gap-2'>
-					<PlayerSide info={replay.player1_info} side='left' isWinner={p1wins} />
-
-					{/* Center */}
-					<div className='flex flex-col items-center gap-1 w-20 shrink-0'>
-						<span className={`text-xs font-bold ${p1wins ? "text-success" : "text-error"}`}>
-							{p1wins ? "WINS" : "LOSES"}
-						</span>
-						<div className='relative w-10 h-6'>
-							<Image src={VS_IMG} alt='VS' fill className='object-contain' unoptimized />
-						</div>
-						<span className={`text-xs font-bold ${p2wins ? "text-success" : "text-error"}`}>
-							{p2wins ? "WINS" : "LOSES"}
-						</span>
-						<span className='text-[10px] text-base-content/40 text-center leading-tight'>
-							{replay.replay_battle_type_name}
-						</span>
-					</div>
-
-					<PlayerSide info={replay.player2_info} side='right' isWinner={p2wins} />
-				</div>
+		<StatCard bodyClassName="p-3 gap-2">
+			{/* Names + date */}
+			<div className="flex items-center justify-between gap-2 flex-wrap">
+				<PlayerName info={replay.player1_info} align="left" />
+				<span className="text-xs text-base-content/40 shrink-0 order-last sm:order-none w-full text-center sm:w-auto">
+					{date}
+				</span>
+				<PlayerName info={replay.player2_info} align="right" />
 			</div>
-		</div>
+
+			{/* Battle row */}
+			<div className="flex items-center gap-2">
+				<PlayerSide info={replay.player1_info} side="left" isWinner={p1wins} />
+
+				{/* Center */}
+				<div className="flex flex-col items-center gap-1 w-20 shrink-0">
+					<span className={`text-xs font-bold ${p1wins ? "text-success" : "text-error"}`}>
+						{p1wins ? "WINS" : "LOSES"}
+					</span>
+					<div className="relative w-10 h-6">
+						<Image src={VS_IMG} alt="VS" fill className="object-contain" unoptimized />
+					</div>
+					<span className={`text-xs font-bold ${p2wins ? "text-success" : "text-error"}`}>
+						{p2wins ? "WINS" : "LOSES"}
+					</span>
+					<span className="text-[10px] text-base-content/40 text-center leading-tight">
+						{replay.replay_battle_type_name}
+					</span>
+				</div>
+
+				<PlayerSide info={replay.player2_info} side="right" isWinner={p2wins} />
+			</div>
+		</StatCard>
 	);
 }

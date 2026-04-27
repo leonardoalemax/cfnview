@@ -1,10 +1,12 @@
 import type { GetServerSideProps } from "next";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import BattleCard from "../../../components/BattleCard";
 import CalendarHeatmap from "../../../components/CalendarHeatmap";
 import UserHeader from "../../../components/UserHeader";
+import AppNavbar from "../../../components/ui/AppNavbar";
+import PageLayout from "../../../components/ui/PageLayout";
+import StatCard from "../../../components/ui/StatCard";
 import { getBattlelog } from "../../../lib/battlelog-server";
 import type { CachedBattlelog } from "../../../lib/types";
 
@@ -13,11 +15,19 @@ type Tab = (typeof VALID_TABS)[number];
 
 const WinLossChart = dynamic(() => import("../../../components/WinLossChart"), {
 	ssr: false,
-	loading: () => <div className='skeleton h-48 w-full' />,
+	loading: () => (
+		<StatCard className="mb-6">
+			<div className="skeleton h-48 w-full rounded-box" />
+		</StatCard>
+	),
 });
 const OpponentChart = dynamic(() => import("../../../components/OpponentChart"), {
 	ssr: false,
-	loading: () => <div className='skeleton h-64 w-full' />,
+	loading: () => (
+		<StatCard>
+			<div className="skeleton h-64 w-full rounded-box" />
+		</StatCard>
+	),
 });
 
 interface Props extends CachedBattlelog {
@@ -37,7 +47,7 @@ function TabContent({ tab, userId, replays }: Props) {
 	if (tab === "opponents") return <OpponentChart replays={replays} userId={userId} />;
 	if (tab === "calendar") return <CalendarHeatmap replays={replays} userId={userId} />;
 	return (
-		<ul className='flex flex-col gap-3'>
+		<ul className="flex flex-col gap-3">
 			{replays.map((replay) => (
 				<li key={replay.replay_id}>
 					<BattleCard replay={replay} />
@@ -49,73 +59,46 @@ function TabContent({ tab, userId, replays }: Props) {
 
 export default function BattlelogPage(props: Props) {
 	const { userId, tab, cachedAt, bannerInfo } = props;
-	const router = useRouter();
 
-	const cacheLabel = cachedAt ? new Date(cachedAt).toLocaleString("pt-BR") : null;
-
-	function handleResync() {
-		router.replace(`/battlelog/${userId}/${tab}?resync=true`);
-	}
+	const cacheLabel = cachedAt
+		? `Atualizado em ${new Date(cachedAt).toLocaleString("pt-BR")}`
+		: undefined;
 
 	return (
-		<main className='min-h-screen p-6'>
-			<div className='max-w-3xl mx-auto'>
-				{/* App bar */}
-				<div className='flex items-center justify-between mb-4'>
-					<div>
-						<h1 className='text-2xl font-bold'>cfnview</h1>
-						{cacheLabel && (
-							<p className='text-xs text-base-content/40 mt-0.5'>
-								Atualizado em {cacheLabel}
-							</p>
-						)}
-					</div>
-					<button className='btn btn-outline btn-sm' onClick={handleResync}>
-						Resync
-					</button>
-				</div>
+		<PageLayout>
+			<AppNavbar title="cfnview" subtitle={cacheLabel} />
 
-				{/* User profile header */}
-				{bannerInfo && <UserHeader info={bannerInfo} />}
+			{bannerInfo && <UserHeader info={bannerInfo} />}
 
-				{/* Tabs */}
-				<div role='tablist' className='tabs tabs-bordered mb-6'>
+			{/* Tabs — scrollable on mobile */}
+			<div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 mb-6">
+				<div role="tablist" className="tabs tabs-box flex-nowrap min-w-max sm:min-w-0">
 					{VALID_TABS.map((t) => (
 						<Link
 							key={t}
 							href={`/battlelog/${userId}/${t}`}
-							role='tab'
+							role="tab"
 							className={`tab ${tab === t ? "tab-active" : ""}`}
 						>
 							{TAB_LABELS[t]}
 						</Link>
 					))}
 				</div>
-
-				{/* Content */}
-				<TabContent {...props} />
 			</div>
-		</main>
+
+			<TabContent {...props} />
+		</PageLayout>
 	);
 }
 
-export const getServerSideProps: GetServerSideProps<Props> = async ({ params, query }) => {
+export const getServerSideProps: GetServerSideProps<Props> = async ({ params }) => {
 	const userId = String(params?.userId ?? "");
 	const tab = String(params?.tab ?? "") as Tab;
 
 	if (!VALID_TABS.includes(tab)) return { notFound: true };
 
-	const resync = query.resync === "true";
-
 	try {
-		const data = await getBattlelog(userId, resync);
-
-		if (resync) {
-			return {
-				redirect: { destination: `/battlelog/${userId}/${tab}`, permanent: false },
-			};
-		}
-
+		const data = await getBattlelog(userId);
 		return { props: { ...data, userId, tab } };
 	} catch {
 		return {

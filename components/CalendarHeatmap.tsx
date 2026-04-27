@@ -1,4 +1,6 @@
 import { getWinner, type SF6Replay } from "../lib/types";
+import StatCard from "./ui/StatCard";
+import SectionTitle from "./ui/SectionTitle";
 
 interface Props {
 	replays: SF6Replay[];
@@ -82,7 +84,7 @@ function buildData(replays: SF6Replay[], userId: string) {
 		weeks.push(week);
 	}
 
-	// Month label for each week column: show label when the month of Sunday changes
+	// Month label for each week column
 	const monthLabels: Array<{ label: string; col: number }> = [];
 	let lastMonth = -1;
 	weeks.forEach((week, col) => {
@@ -98,48 +100,47 @@ function buildData(replays: SF6Replay[], userId: string) {
 
 function WeekdayChart({ byWeekday }: { byWeekday: DayStat[] }) {
 	return (
-		<div className="card bg-base-200 border border-base-300">
-			<div className="card-body p-4 gap-3">
-				<h2 className="card-title text-base">Win rate por dia da semana</h2>
-				<div className="flex flex-col gap-2">
-					{byWeekday.map((stat, i) => {
-						const wr = stat.total > 0 ? Math.round((stat.wins / stat.total) * 100) : null;
-						return (
-							<div key={i} className="flex items-center gap-2">
-								<span style={{ width: 28, fontSize: 11, textAlign: "right", color: "oklch(var(--bc) / 0.5)", flexShrink: 0 }}>
-									{DAY_LABELS[i]}
-								</span>
-								<div style={{ flex: 1, height: 18, borderRadius: 3, background: "oklch(var(--b3))", overflow: "hidden" }}>
-									{wr !== null && (
-										<div
-											style={{
-												width: `${wr}%`,
-												height: "100%",
-												borderRadius: 3,
-												background: winRateColor(stat.wins, stat.total),
-												transition: "width 0.3s",
-											}}
-										/>
-									)}
-								</div>
-								<div style={{ width: 90, fontSize: 11, flexShrink: 0, display: "flex", gap: 6, justifyContent: "flex-end" }}>
-									{wr !== null ? (
-										<>
-											<span style={{ color: "oklch(var(--bc) / 0.4)" }}>{stat.total}j</span>
-											<span style={{ fontWeight: 600, color: wr >= 50 ? "hsl(120,55%,45%)" : "hsl(0,65%,50%)" }}>
-												{wr}%
-											</span>
-										</>
-									) : (
-										<span style={{ color: "oklch(var(--bc) / 0.3)" }}>—</span>
-									)}
-								</div>
+		<StatCard bodyClassName="gap-3">
+			<SectionTitle>Win rate por dia da semana</SectionTitle>
+			<div className="flex flex-col gap-2">
+				{byWeekday.map((stat, i) => {
+					const wr = stat.total > 0 ? Math.round((stat.wins / stat.total) * 100) : null;
+					return (
+						<div key={i} className="flex items-center gap-2">
+							<span className="w-7 text-[11px] text-right text-base-content/50 shrink-0">
+								{DAY_LABELS[i]}
+							</span>
+							<div className="flex-1 h-[18px] rounded bg-base-300 overflow-hidden">
+								{wr !== null && (
+									<div
+										className="h-full rounded transition-all duration-300"
+										style={{
+											width: `${wr}%`,
+											background: winRateColor(stat.wins, stat.total),
+										}}
+									/>
+								)}
 							</div>
-						);
-					})}
-				</div>
+							<div className="w-[90px] text-[11px] shrink-0 flex gap-1.5 justify-end">
+								{wr !== null ? (
+									<>
+										<span className="text-base-content/40">{stat.total}j</span>
+										<span
+											className="font-semibold"
+											style={{ color: wr >= 50 ? "hsl(120,55%,45%)" : "hsl(0,65%,50%)" }}
+										>
+											{wr}%
+										</span>
+									</>
+								) : (
+									<span className="text-base-content/30">—</span>
+								)}
+							</div>
+						</div>
+					);
+				})}
 			</div>
-		</div>
+		</StatCard>
 	);
 }
 
@@ -152,11 +153,9 @@ export default function CalendarHeatmap({ replays, userId }: Props) {
 
 	return (
 		<div className="flex flex-col gap-4">
-			<div className="card bg-base-200 border border-base-300">
-				<div className="card-body p-4 gap-4">
-					{/* Title row */}
-					<div className="flex items-center justify-between flex-wrap gap-2">
-						<h2 className="card-title text-base">Calendário de batalhas</h2>
+			<StatCard>
+				<SectionTitle
+					aside={
 						<div className="flex gap-4 text-xs text-base-content/60">
 							<span>{activeDays} dias ativos</span>
 							<span>{totalBattles} batalhas</span>
@@ -164,114 +163,116 @@ export default function CalendarHeatmap({ replays, userId }: Props) {
 								{overallWR}% WR geral
 							</span>
 						</div>
-					</div>
+					}
+				>
+					Calendário de batalhas
+				</SectionTitle>
 
-					<div className="overflow-x-auto pb-1">
-						<div style={{ display: "inline-block" }}>
-							{/* Month labels row */}
-							<div style={{ display: "flex", marginLeft: DAY_COL_W + GAP, height: 18, position: "relative" }}>
-								{monthLabels.map(({ label, col }) => (
-									<span
-										key={col}
+				<div className="overflow-x-auto pb-1">
+					<div style={{ display: "inline-block" }}>
+						{/* Month labels row */}
+						<div style={{ display: "flex", marginLeft: DAY_COL_W + GAP, height: 18, position: "relative" }}>
+							{monthLabels.map(({ label, col }) => (
+								<span
+									key={col}
+									style={{
+										position: "absolute",
+										left: col * STEP,
+										fontSize: 11,
+										lineHeight: "18px",
+										color: "oklch(var(--bc) / 0.5)",
+										whiteSpace: "nowrap",
+									}}
+								>
+									{label}
+								</span>
+							))}
+						</div>
+
+						{/* Day labels + week grid */}
+						<div style={{ display: "flex", gap: GAP }}>
+							{/* Day-of-week labels */}
+							<div style={{ display: "flex", flexDirection: "column", gap: GAP, width: DAY_COL_W }}>
+								{DAY_LABELS.map((label, i) => (
+									<div
+										key={i}
 										style={{
-											position: "absolute",
-											left: col * STEP,
-											fontSize: 11,
-											lineHeight: "18px",
-											color: "oklch(var(--bc) / 0.5)",
-											whiteSpace: "nowrap",
+											height: CELL,
+											fontSize: 10,
+											lineHeight: `${CELL}px`,
+											textAlign: "right",
+											paddingRight: 4,
+											color: "oklch(var(--bc) / 0.4)",
 										}}
 									>
-										{label}
-									</span>
-								))}
-							</div>
-
-							{/* Day labels + week grid */}
-							<div style={{ display: "flex", gap: GAP }}>
-								{/* Day-of-week labels */}
-								<div style={{ display: "flex", flexDirection: "column", gap: GAP, width: DAY_COL_W }}>
-									{DAY_LABELS.map((label, i) => (
-										<div
-											key={i}
-											style={{
-												height: CELL,
-												fontSize: 10,
-												lineHeight: `${CELL}px`,
-												textAlign: "right",
-												paddingRight: 4,
-												color: "oklch(var(--bc) / 0.4)",
-											}}
-										>
-											{i % 2 === 1 ? label : ""}
-										</div>
-									))}
-								</div>
-
-								{/* Week columns */}
-								{weeks.map((week, wi) => (
-									<div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
-										{week.map((cell) => {
-											const empty = !cell.stat || cell.isFuture;
-											const bg = empty
-												? "oklch(var(--b3))"
-												: winRateColor(cell.stat!.wins, cell.stat!.total);
-
-											const wr = cell.stat
-												? Math.round((cell.stat.wins / cell.stat.total) * 100)
-												: 0;
-											const title = cell.stat
-												? `${cell.key}: ${cell.stat.wins}W / ${cell.stat.total - cell.stat.wins}L (${wr}% WR)`
-												: cell.key;
-
-											return (
-												<div
-													key={cell.key}
-													title={title}
-													style={{
-														width: CELL,
-														height: CELL,
-														background: bg,
-														borderRadius: 2,
-														opacity: cell.isFuture ? 0.15 : 1,
-														cursor: cell.stat ? "default" : undefined,
-													}}
-												/>
-											);
-										})}
+										{i % 2 === 1 ? label : ""}
 									</div>
 								))}
 							</div>
 
-							{/* Legend */}
-							<div
-								style={{
-									display: "flex",
-									alignItems: "center",
-									gap: 4,
-									marginTop: 8,
-									marginLeft: DAY_COL_W + GAP,
-									justifyContent: "flex-end",
-								}}
-							>
-								<span style={{ fontSize: 10, color: "oklch(var(--bc) / 0.5)" }}>0%</span>
-								{[0, 0.17, 0.33, 0.5, 0.67, 0.83, 1].map((v) => (
-									<div
-										key={v}
-										style={{
-											width: CELL,
-											height: CELL,
-											borderRadius: 2,
-											background: winRateColor(v, 1),
-										}}
-									/>
-								))}
-								<span style={{ fontSize: 10, color: "oklch(var(--bc) / 0.5)" }}>100%</span>
-							</div>
+							{/* Week columns */}
+							{weeks.map((week, wi) => (
+								<div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
+									{week.map((cell) => {
+										const empty = !cell.stat || cell.isFuture;
+										const bg = empty
+											? "oklch(var(--b3))"
+											: winRateColor(cell.stat!.wins, cell.stat!.total);
+
+										const wr = cell.stat
+											? Math.round((cell.stat.wins / cell.stat.total) * 100)
+											: 0;
+										const title = cell.stat
+											? `${cell.key}: ${cell.stat.wins}W / ${cell.stat.total - cell.stat.wins}L (${wr}% WR)`
+											: cell.key;
+
+										return (
+											<div
+												key={cell.key}
+												title={title}
+												style={{
+													width: CELL,
+													height: CELL,
+													background: bg,
+													borderRadius: 2,
+													opacity: cell.isFuture ? 0.15 : 1,
+													cursor: cell.stat ? "default" : undefined,
+												}}
+											/>
+										);
+									})}
+								</div>
+							))}
+						</div>
+
+						{/* Legend */}
+						<div
+							style={{
+								display: "flex",
+								alignItems: "center",
+								gap: 4,
+								marginTop: 8,
+								marginLeft: DAY_COL_W + GAP,
+								justifyContent: "flex-end",
+							}}
+						>
+							<span style={{ fontSize: 10, color: "oklch(var(--bc) / 0.5)" }}>0%</span>
+							{[0, 0.17, 0.33, 0.5, 0.67, 0.83, 1].map((v) => (
+								<div
+									key={v}
+									style={{
+										width: CELL,
+										height: CELL,
+										borderRadius: 2,
+										background: winRateColor(v, 1),
+									}}
+								/>
+							))}
+							<span style={{ fontSize: 10, color: "oklch(var(--bc) / 0.5)" }}>100%</span>
 						</div>
 					</div>
 				</div>
-			</div>
+			</StatCard>
 
 			<WeekdayChart byWeekday={byWeekday} />
 		</div>
