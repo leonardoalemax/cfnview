@@ -1,21 +1,15 @@
+import dns from "dns";
 import postgres from "postgres";
 
-// Parse the DATABASE_URL and force IPv4 family to avoid ENETUNREACH on IPv6
-// inside Docker environments where IPv6 routing is unavailable.
-const url = new URL(process.env.DATABASE_URL!);
+// Force IPv4 for all DNS lookups in this process.
+// Docker containers often receive AAAA (IPv6) records but cannot route IPv6,
+// causing ENETUNREACH. This must be called before any network connection.
+dns.setDefaultResultOrder("ipv4first");
 
-const sql = postgres({
-	host: url.hostname,
-	port: Number(url.port) || 5432,
-	database: url.pathname.replace("/", ""),
-	username: url.username,
-	password: url.password,
+const sql = postgres(process.env.DATABASE_URL!, {
 	ssl: { rejectUnauthorized: false },
 	max: 5,
 	idle_timeout: 20,
-	// Force IPv4 — prevents DNS from resolving to AAAA (IPv6) addresses
-	// which Docker containers often cannot route.
-	fetch_types: false,
 });
 
 export default sql;
