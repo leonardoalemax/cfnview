@@ -3,7 +3,9 @@
     "allow": [
       "Bash(yarn add *)",
       "Bash(yarn build *)",
-      "Bash(grep -v \"^$\")"
+      "Bash(grep -v \"^$\")",
+      "Bash(cp /Users/leoalemax/Workspace/@leonardoalemax/cfnview/pages/battlelog/\\\\[userId\\\\]/overlay.tsx /Users/leoalemax/Workspace/@leonardoalemax/cfnview/pages/battlelog/\\\\[userId\\\\]/overlay/index.tsx)",
+      "Bash(rm /Users/leoalemax/Workspace/@leonardoalemax/cfnview/pages/battlelog/\\\\[userId\\\\]/overlay.tsx)"
     ]
   }
 }

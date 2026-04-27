@@ -24,6 +24,8 @@ interface CharStat {
 	total: number;
 	wins: number;
 	losses: number;
+	cleanLosses: number;   // losses with 0 rounds won
+	closeLosses: number;   // losses with ≥1 round won
 	winRate: number;
 	priorityScore: number;
 }
@@ -53,6 +55,8 @@ function buildStats(replays: SF6Replay[], userId: string): CharStat[] {
 				total: 0,
 				wins: 0,
 				losses: 0,
+				cleanLosses: 0,
+				closeLosses: 0,
 				winRate: 0,
 				priorityScore: 0,
 			});
@@ -60,11 +64,26 @@ function buildStats(replays: SF6Replay[], userId: string): CharStat[] {
 
 		const stat = map.get(key)!;
 		stat.total++;
-		getWinner(replay) === side ? stat.wins++ : stat.losses++;
+
+		const userInfo = side === 1 ? replay.player1_info : replay.player2_info;
+		const won = getWinner(replay) === side;
+
+		if (won) {
+			stat.wins++;
+		} else {
+			stat.losses++;
+			const roundsWon = userInfo.round_results.filter((r) => r === 1).length;
+			if (roundsWon === 0) stat.cleanLosses++;
+			else stat.closeLosses++;
+		}
+
 		stat.winRate = Math.round((stat.wins / stat.total) * 100);
-		const lossRate = stat.losses / stat.total;
-		const winRateWeight = stat.winRate >= 50 ? 0.1 : 2.0;
-		stat.priorityScore = stat.total * lossRate * winRateWeight;
+
+		// Priority score: clean losses (0 rounds won) weigh 3×, close losses weigh 1.5×
+		// Halved when overall WR ≥ 50% (already comfortable against this character)
+		const winRateWeight = stat.winRate >= 50 ? 0.5 : 1.0;
+		stat.priorityScore =
+			(stat.cleanLosses * 3.0 + stat.closeLosses * 1.5) * winRateWeight;
 	}
 
 	return Array.from(map.values()).sort((a, b) => b.total - a.total);
@@ -99,6 +118,16 @@ function TrainingCard({ stat, rank }: { stat: CharStat; rank: number }) {
 						valueClassName={stat.winRate >= 50 ? "text-success" : "text-error"}
 					/>
 					<StatRow label="Derrotas" value={stat.losses} valueClassName="text-error" />
+					<StatRow
+						label="Derrota limpa"
+						value={stat.cleanLosses}
+						valueClassName={stat.cleanLosses > 0 ? "text-error font-bold" : "text-base-content/40"}
+					/>
+					<StatRow
+						label="Derrota disputada"
+						value={stat.closeLosses}
+						valueClassName="text-base-content/60"
+					/>
 				</div>
 
 				{/* Loss rate bar: track=success, fill=error */}
