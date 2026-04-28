@@ -11,9 +11,17 @@ export async function getCached(userId: string): Promise<CachedBattlelog | null>
 	if (!rows.length) return null;
 
 	const row = rows[0];
+
+	const replays = typeof row.replays === "string" ? JSON.parse(row.replays) : row.replays;
+	const bannerInfo = row.banner_info
+		? typeof row.banner_info === "string"
+			? JSON.parse(row.banner_info)
+			: row.banner_info
+		: undefined;
+
 	return {
-		replays: row.replays,
-		bannerInfo: row.banner_info ?? undefined,
+		replays: Array.isArray(replays) ? replays : [],
+		bannerInfo,
 		cachedAt: Number(row.cached_at),
 	};
 }
