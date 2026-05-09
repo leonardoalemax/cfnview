@@ -34,7 +34,9 @@
     "pages/**/*.ts",
     "pages/**/*.tsx",
     "lib/**/*.ts",
-    "styles/**/*.css"
+    "styles/**/*.css",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

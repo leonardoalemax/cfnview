@@ -193,7 +193,7 @@ function PlayerSide({
 
 	const resultLabel = (
 		<span
-			className={`text-base font-black tracking-widest ${isWinner && !compact ? "text-success" : "text-base-content/40"}`}>
+			className={`text-base font-black tracking-widest ${isWinner ? "text-success" : "text-base-content/40"}`}>
 			{isWinner ? "WINS" : "LOSES"}
 		</span>
 	);

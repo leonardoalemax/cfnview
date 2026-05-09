@@ -1,5 +1,7 @@
+"use client";
+
 import { useState } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import PageLayout from "../components/ui/PageLayout";
 
 export default function Home() {

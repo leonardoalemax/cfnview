@@ -12,8 +12,10 @@ interface Props {
 export default function ChromaBlock({ style }: Props) {
 	return (
 		<div
+			className='shadow-md'
 			style={{
 				...CARD_STYLE,
+				border: "1px solid #00FF00",
 				background: "#00FF00",
 				...style,
 			}}
