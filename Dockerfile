@@ -13,11 +13,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ARG SF6_COOKIE
-ARG DATABASE_URL
+ARG GO_API_URL
 
-ENV SF6_COOKIE=$SF6_COOKIE
-ENV DATABASE_URL=$DATABASE_URL
+ENV GO_API_URL=$GO_API_URL
 
 RUN yarn build
 
@@ -25,11 +23,10 @@ RUN yarn build
 FROM base AS runner
 WORKDIR /app
 
-ARG SF6_COOKIE
-ARG DATABASE_URL
+ARG GO_API_URL
 
-ENV SF6_COOKIE=$SF6_COOKIE
-ENV DATABASE_URL=$DATABASE_URL
+ENV GO_API_URL=$GO_API_URL
+
 ENV NODE_ENV=production
 
 RUN addgroup --system --gid 1001 nodejs && \

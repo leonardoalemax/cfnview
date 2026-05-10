@@ -6,8 +6,7 @@ services:
         build:
             context: ..
             args:
-                SF6_COOKIE: ${SF6_COOKIE}
-                DATABASE_URL: ${DATABASE_URL}
+                GO_API_URL: ${GO_API_URL}
         ports:
             - "6768:3000"
         restart: unless-stopped
