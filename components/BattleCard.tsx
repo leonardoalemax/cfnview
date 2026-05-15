@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import styles from "./BattleCard.module.scss";
 import {
 	SF6Replay,
 	SF6PlayerInfo,
@@ -254,13 +255,11 @@ export default function BattleCard({
 	);
 
 	return (
-		<div
-			className='card bg-base-100 border border-base-300 overflow-hidden'
-			style={{
-				height: compact ? 120 : "auto",
-			}}>
-			<CardHeader compact={compact} replay={replay} p1wins={p1wins} />
-			{battleRow}
+		<div className={styles.BattleCard}>
+			<div className={styles.BattleCardBody}>
+				<CardHeader compact={compact} replay={replay} p1wins={p1wins} />
+				{battleRow}
+			</div>
 		</div>
 	);
 }

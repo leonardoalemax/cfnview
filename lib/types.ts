@@ -6,6 +6,13 @@ export function characterImg(toolName: string, side: "l" | "r"): string {
 	return `${SF6_BASE}/material/character/character_${toolName}_${side}.png`;
 }
 
+export function characterFace(
+	toolName: string,
+	face: "1" | "2" | "3" | "4" | "5",
+): string {
+	return `${SF6_BASE}/praise/fighter/${toolName}/face${face}.png`;
+}
+
 export function rankImg(gradeId: number): string {
 	return `${SF6_BASE}/material/rank/rank${gradeId}_s.png`;
 }
@@ -100,14 +107,152 @@ export interface SF6BattlelogResponse {
 
 // ─── Derived winner ───────────────────────────────────────────────────────────
 
-// round_results: 1 = round won, 0 = round lost, other = draw/disconnect
+// round_results: 0 = loss/not played, any positive value = round won (KO, timeout, chip, etc.)
 export function getWinner(replay: SF6Replay): 1 | 2 {
-	const p1wins = replay.player1_info.round_results.filter((r) => r === 1).length;
-	const p2wins = replay.player2_info.round_results.filter((r) => r === 1).length;
-	return p1wins >= p2wins ? 1 : 2;
+	const p1wins = replay.player1_info.round_results.filter((r) => r > 0).length;
+	const p2wins = replay.player2_info.round_results.filter((r) => r > 0).length;
+	return p1wins > p2wins ? 1 : 2;
+}
+
+// ─── Computed stat responses ──────────────────────────────────────────────────
+
+export interface WinLossStat {
+	wins: number;
+	losses: number;
+	total: number;
+	win_pct: number;
+}
+
+export interface CharStat {
+	name: string;
+	tool_name: string;
+	total: number;
+	wins: number;
+	losses: number;
+	clean_losses: number;
+	close_losses: number;
+	win_rate: number;
+	priority_score: number;
+}
+
+export interface CalendarStat {
+	by_day: Record<string, { wins: number; total: number }>;
+	by_weekday: Array<{ wins: number; total: number }>;
+}
+
+// ─── Paginated replays response ──────────────────────────────────────────────
+
+export interface ReplayPage {
+	replays: SF6Replay[];
+	total: number;
+	page: number;
+	total_pages: number;
+}
+
+// ─── Player search index ─────────────────────────────────────────────────────
+
+export interface PlayerEntry {
+	fighter_id: string;
+	short_id: number;
+	character_tool_name: string;
+	updated_at: number;
+}
+
+// ─── Fighting stats (matchup win rates) ──────────────────────────────────────
+
+export interface FightingOpponentHeader {
+	id: number;
+	name_alpha: string;
+	tool_name: string;
+	input_type: string;
+}
+
+export interface FightingValue {
+	oid: number;
+	val: string;
+	sf: number;
+}
+
+export interface FightingRecord {
+	id: number;
+	name_alpha: string;
+	tool_name: string;
+	input_type: string;
+	total: string;
+	win_rate: number;
+	values: FightingValue[];
+}
+
+export interface LeagueFighting {
+	league_rank: number;
+	opponent_header: FightingOpponentHeader[];
+	records: FightingRecord[];
+}
+
+export interface FightingSnapshot {
+	yyyymm: string;
+	leagues: LeagueFighting[];
+	cached_at: number;
+}
+
+// ─── Character usage ─────────────────────────────────────────────────────────
+
+export interface CharUsageEntry {
+	character_tool_name: string;
+	character_alpha: string;
+	play_rate: number;
+	previous_rate: number;
+}
+
+export interface LeagueUsage {
+	operation_type: number;
+	league_rank: number;
+	league_alpha: string;
+	entries: CharUsageEntry[];
+}
+
+export interface UsageSnapshot {
+	yyyymm: string;
+	leagues: LeagueUsage[];
+	cached_at: number;
+}
+
+// ─── Hourly stats ────────────────────────────────────────────────────────────
+
+export interface HourStat {
+	hour: number;
+	wins: number;
+	total: number;
+}
+
+export interface HourlyStats {
+	hours: HourStat[];
+}
+
+// ─── LP history ──────────────────────────────────────────────────────────────
+
+export interface LPEntry {
+	date: string; // YYYY-MM-DD
+	lp: number;
+}
+
+export interface LPHistory {
+	entries: LPEntry[];
 }
 
 // ─── Cache payload (stored in Firestore) ─────────────────────────────────────
+
+export interface CharacterOption {
+	tool_name: string;
+	name: string;
+}
+
+export interface CharacterRankStat {
+	name: string;
+	tool_name: string;
+	lp: number;
+	league_rank: number;
+}
 
 export interface CachedBattlelog {
 	replays: SF6Replay[];

@@ -5,10 +5,11 @@ services:
         container_name: ${PREFIX}-cfnview
         build:
             context: ..
-            args:
-                GO_API_URL: ${GO_API_URL}
         ports:
             - "6768:3000"
         restart: unless-stopped
         environment:
             NODE_OPTIONS: "--dns-result-order=ipv4first"
+            GO_API_URL: ${GO_API_URL}
+            NEXT_PUBLIC_GO_API_URL: ${NEXT_PUBLIC_GO_API_URL}
+            NEXT_PUBLIC_GO_WS_URL: ${NEXT_PUBLIC_GO_WS_URL}

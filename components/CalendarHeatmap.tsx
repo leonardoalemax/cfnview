@@ -1,16 +1,6 @@
-import { getWinner, type SF6Replay } from "../lib/types";
+import type { CalendarStat } from "../lib/types";
 import StatCard from "./ui/StatCard";
 import SectionTitle from "./ui/SectionTitle";
-
-interface Props {
-	replays: SF6Replay[];
-	userId: string;
-}
-
-interface DayStat {
-	wins: number;
-	total: number;
-}
 
 const MONTHS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 const DAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -19,14 +9,6 @@ const CELL = 12;
 const GAP = 3;
 const STEP = CELL + GAP;
 const DAY_COL_W = 28;
-
-function findUserSide(replay: SF6Replay, userId: string): 1 | 2 | null {
-	if (replay.player1_info.player.short_id.toString() === userId) return 1;
-	if (replay.player2_info.player.short_id.toString() === userId) return 2;
-	if (replay.player1_info.player.fighter_id === userId) return 1;
-	if (replay.player2_info.player.fighter_id === userId) return 2;
-	return null;
-}
 
 function toDateKey(d: Date): string {
 	return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -38,67 +20,41 @@ function winRateColor(wins: number, total: number): string {
 	return `hsl(${Math.round(h)}, 75%, 45%)`;
 }
 
-function buildData(replays: SF6Replay[], userId: string) {
-	const byDay = new Map<string, DayStat>();
-	const byWeekday: DayStat[] = Array.from({ length: 7 }, () => ({ wins: 0, total: 0 }));
-
-	for (const replay of replays) {
-		const side = findUserSide(replay, userId);
-		if (!side) continue;
-		const date = new Date(replay.uploaded_at * 1000);
-		const key = toDateKey(date);
-		if (!byDay.has(key)) byDay.set(key, { wins: 0, total: 0 });
-		const s = byDay.get(key)!;
-		s.total++;
-		const won = getWinner(replay) === side;
-		if (won) s.wins++;
-
-		const wd = byWeekday[date.getDay()];
-		wd.total++;
-		if (won) wd.wins++;
-	}
-
-	// Start on the Sunday of the week 3 months ago
+function buildWeeks(byDay: CalendarStat["by_day"]) {
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
 	const start = new Date(today);
 	start.setMonth(start.getMonth() - 3);
 	start.setDate(start.getDate() - start.getDay());
 
-	// Build week columns
-	const weeks: Array<Array<{ date: Date; key: string; stat: DayStat | null; isFuture: boolean }>> = [];
+	const weeks: Array<Array<{ key: string; stat: { wins: number; total: number } | null; isFuture: boolean }>> = [];
 	const cur = new Date(start);
 
 	while (cur <= today) {
 		const week = [];
 		for (let d = 0; d < 7; d++) {
 			const date = new Date(cur);
-			week.push({
-				date,
-				key: toDateKey(date),
-				stat: byDay.get(toDateKey(date)) ?? null,
-				isFuture: date > today,
-			});
+			const key = toDateKey(date);
+			week.push({ key, stat: byDay[key] ?? null, isFuture: date > today });
 			cur.setDate(cur.getDate() + 1);
 		}
 		weeks.push(week);
 	}
 
-	// Month label for each week column
 	const monthLabels: Array<{ label: string; col: number }> = [];
 	let lastMonth = -1;
 	weeks.forEach((week, col) => {
-		const m = week[0].date.getMonth();
+		const m = new Date(week[0].key + "T12:00:00").getMonth();
 		if (m !== lastMonth) {
 			monthLabels.push({ label: MONTHS[m], col });
 			lastMonth = m;
 		}
 	});
 
-	return { weeks, monthLabels, byDay, byWeekday };
+	return { weeks, monthLabels };
 }
 
-function WeekdayChart({ byWeekday }: { byWeekday: DayStat[] }) {
+function WeekdayChart({ byWeekday }: { byWeekday: CalendarStat["by_weekday"] }) {
 	return (
 		<StatCard bodyClassName="gap-3">
 			<SectionTitle>Win rate por dia da semana</SectionTitle>
@@ -114,10 +70,7 @@ function WeekdayChart({ byWeekday }: { byWeekday: DayStat[] }) {
 								{wr !== null && (
 									<div
 										className="h-full rounded transition-all duration-300"
-										style={{
-											width: `${wr}%`,
-											background: winRateColor(stat.wins, stat.total),
-										}}
+										style={{ width: `${wr}%`, background: winRateColor(stat.wins, stat.total) }}
 									/>
 								)}
 							</div>
@@ -144,11 +97,17 @@ function WeekdayChart({ byWeekday }: { byWeekday: DayStat[] }) {
 	);
 }
 
-export default function CalendarHeatmap({ replays, userId }: Props) {
-	const { weeks, monthLabels, byDay, byWeekday } = buildData(replays, userId);
+export default function CalendarHeatmap({ data }: { data: CalendarStat | null }) {
+	if (!data) return null;
+
+	const { weeks, monthLabels } = buildWeeks(data.by_day);
 
 	let totalBattles = 0, totalWins = 0, activeDays = 0;
-	byDay.forEach((s) => { totalBattles += s.total; totalWins += s.wins; activeDays++; });
+	for (const s of Object.values(data.by_day)) {
+		totalBattles += s.total;
+		totalWins += s.wins;
+		activeDays++;
+	}
 	const overallWR = totalBattles > 0 ? Math.round((totalWins / totalBattles) * 100) : 0;
 
 	return (
@@ -170,7 +129,6 @@ export default function CalendarHeatmap({ replays, userId }: Props) {
 
 				<div className="overflow-x-auto pb-1">
 					<div style={{ display: "inline-block" }}>
-						{/* Month labels row */}
 						<div style={{ display: "flex", marginLeft: DAY_COL_W + GAP, height: 18, position: "relative" }}>
 							{monthLabels.map(({ label, col }) => (
 								<span
@@ -189,9 +147,7 @@ export default function CalendarHeatmap({ replays, userId }: Props) {
 							))}
 						</div>
 
-						{/* Day labels + week grid */}
 						<div style={{ display: "flex", gap: GAP }}>
-							{/* Day-of-week labels */}
 							<div style={{ display: "flex", flexDirection: "column", gap: GAP, width: DAY_COL_W }}>
 								{DAY_LABELS.map((label, i) => (
 									<div
@@ -210,18 +166,12 @@ export default function CalendarHeatmap({ replays, userId }: Props) {
 								))}
 							</div>
 
-							{/* Week columns */}
 							{weeks.map((week, wi) => (
 								<div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
 									{week.map((cell) => {
 										const empty = !cell.stat || cell.isFuture;
-										const bg = empty
-											? "oklch(var(--b3))"
-											: winRateColor(cell.stat!.wins, cell.stat!.total);
-
-										const wr = cell.stat
-											? Math.round((cell.stat.wins / cell.stat.total) * 100)
-											: 0;
+										const bg = empty ? "oklch(var(--b3))" : winRateColor(cell.stat!.wins, cell.stat!.total);
+										const wr = cell.stat ? Math.round((cell.stat.wins / cell.stat.total) * 100) : 0;
 										const title = cell.stat
 											? `${cell.key}: ${cell.stat.wins}W / ${cell.stat.total - cell.stat.wins}L (${wr}% WR)`
 											: cell.key;
@@ -245,7 +195,6 @@ export default function CalendarHeatmap({ replays, userId }: Props) {
 							))}
 						</div>
 
-						{/* Legend */}
 						<div
 							style={{
 								display: "flex",
@@ -260,12 +209,7 @@ export default function CalendarHeatmap({ replays, userId }: Props) {
 							{[0, 0.17, 0.33, 0.5, 0.67, 0.83, 1].map((v) => (
 								<div
 									key={v}
-									style={{
-										width: CELL,
-										height: CELL,
-										borderRadius: 2,
-										background: winRateColor(v, 1),
-									}}
+									style={{ width: CELL, height: CELL, borderRadius: 2, background: winRateColor(v, 1) }}
 								/>
 							))}
 							<span style={{ fontSize: 10, color: "oklch(var(--bc) / 0.5)" }}>100%</span>
@@ -274,7 +218,7 @@ export default function CalendarHeatmap({ replays, userId }: Props) {
 				</div>
 			</StatCard>
 
-			<WeekdayChart byWeekday={byWeekday} />
+			<WeekdayChart byWeekday={data.by_weekday} />
 		</div>
 	);
 }

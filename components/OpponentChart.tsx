@@ -7,93 +7,16 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { getWinner, type SF6Replay } from "../lib/types";
+import type { CharStat } from "../lib/types";
 import StatCard from "./ui/StatCard";
 import SectionTitle from "./ui/SectionTitle";
 import StatRow from "./ui/StatRow";
-import WinRateBar from "./ui/WinRateBar";
-
-interface Props {
-	replays: SF6Replay[];
-	userId: string;
-}
-
-interface CharStat {
-	name: string;
-	toolName: string;
-	total: number;
-	wins: number;
-	losses: number;
-	cleanLosses: number;   // losses with 0 rounds won
-	closeLosses: number;   // losses with ≥1 round won
-	winRate: number;
-	priorityScore: number;
-}
-
-function findUserSide(replay: SF6Replay, userId: string): 1 | 2 | null {
-	if (replay.player1_info.player.short_id.toString() === userId) return 1;
-	if (replay.player2_info.player.short_id.toString() === userId) return 2;
-	if (replay.player1_info.player.fighter_id === userId) return 1;
-	if (replay.player2_info.player.fighter_id === userId) return 2;
-	return null;
-}
-
-function buildStats(replays: SF6Replay[], userId: string): CharStat[] {
-	const map = new Map<string, CharStat>();
-
-	for (const replay of replays) {
-		const side = findUserSide(replay, userId);
-		if (side === null) continue;
-
-		const opponent = side === 1 ? replay.player2_info : replay.player1_info;
-		const key = opponent.playing_character_tool_name;
-
-		if (!map.has(key)) {
-			map.set(key, {
-				name: opponent.playing_character_name,
-				toolName: key,
-				total: 0,
-				wins: 0,
-				losses: 0,
-				cleanLosses: 0,
-				closeLosses: 0,
-				winRate: 0,
-				priorityScore: 0,
-			});
-		}
-
-		const stat = map.get(key)!;
-		stat.total++;
-
-		const userInfo = side === 1 ? replay.player1_info : replay.player2_info;
-		const won = getWinner(replay) === side;
-
-		if (won) {
-			stat.wins++;
-		} else {
-			stat.losses++;
-			const roundsWon = userInfo.round_results.filter((r) => r === 1).length;
-			if (roundsWon === 0) stat.cleanLosses++;
-			else stat.closeLosses++;
-		}
-
-		stat.winRate = Math.round((stat.wins / stat.total) * 100);
-
-		// Priority score: clean losses (0 rounds won) weigh 3×, close losses weigh 1.5×
-		// Halved when overall WR ≥ 50% (already comfortable against this character)
-		const winRateWeight = stat.winRate >= 50 ? 0.5 : 1.0;
-		stat.priorityScore =
-			(stat.cleanLosses * 3.0 + stat.closeLosses * 1.5) * winRateWeight;
-	}
-
-	return Array.from(map.values()).sort((a, b) => b.total - a.total);
-}
 
 const SF6_BASE = "https://www.streetfighter.com/6/buckler/assets/images";
 const MEDALS = ["🥇", "🥈", "🥉"];
 
 function TrainingCard({ stat, rank }: { stat: CharStat; rank: number }) {
-	const lossRate = 100 - stat.winRate;
+	const lossRate = 100 - stat.win_rate;
 
 	return (
 		<div className="card bg-base-100 border border-base-300 flex-1 min-w-0">
@@ -102,7 +25,7 @@ function TrainingCard({ stat, rank }: { stat: CharStat; rank: number }) {
 
 				<div className="relative w-20 h-20">
 					<img
-						src={`${SF6_BASE}/material/character/character_${stat.toolName}_l.png`}
+						src={`${SF6_BASE}/material/character/character_${stat.tool_name}_l.png`}
 						alt={stat.name}
 						className="w-full h-full object-contain"
 					/>
@@ -114,23 +37,22 @@ function TrainingCard({ stat, rank }: { stat: CharStat; rank: number }) {
 					<StatRow label="Batalhas" value={stat.total} />
 					<StatRow
 						label="Win rate"
-						value={`${stat.winRate}%`}
-						valueClassName={stat.winRate >= 50 ? "text-success" : "text-error"}
+						value={`${stat.win_rate}%`}
+						valueClassName={stat.win_rate >= 50 ? "text-success" : "text-error"}
 					/>
 					<StatRow label="Derrotas" value={stat.losses} valueClassName="text-error" />
 					<StatRow
 						label="Derrota limpa"
-						value={stat.cleanLosses}
-						valueClassName={stat.cleanLosses > 0 ? "text-error font-bold" : "text-base-content/40"}
+						value={stat.clean_losses}
+						valueClassName={stat.clean_losses > 0 ? "text-error font-bold" : "text-base-content/40"}
 					/>
 					<StatRow
 						label="Derrota disputada"
-						value={stat.closeLosses}
+						value={stat.close_losses}
 						valueClassName="text-base-content/60"
 					/>
 				</div>
 
-				{/* Loss rate bar: track=success, fill=error */}
 				<div className="w-full h-1.5 rounded-full bg-success overflow-hidden">
 					<div className="h-full bg-error rounded-full" style={{ width: `${lossRate}%` }} />
 				</div>
@@ -140,29 +62,26 @@ function TrainingCard({ stat, rank }: { stat: CharStat; rank: number }) {
 	);
 }
 
-export default function OpponentChart({ replays, userId }: Props) {
-	const stats = buildStats(replays, userId);
-	if (stats.length === 0) return null;
+export default function OpponentChart({ data: stats }: { data: CharStat[] | null }) {
+	if (!stats || stats.length === 0) return null;
 
-	const trainingTargets = Array.from(stats)
-		.sort((a, b) => b.priorityScore - a.priorityScore)
+	const trainingTargets = [...stats]
+		.sort((a, b) => b.priority_score - a.priority_score)
 		.slice(0, 3);
 
 	return (
 		<div className="flex flex-col gap-4">
-			{/* Training recommendations */}
 			<StatCard>
 				<SectionTitle subtitle="Baseado na frequência de batalhas × taxa de derrota">
 					Personagens para treinar
 				</SectionTitle>
 				<div className="flex gap-3">
 					{trainingTargets.map((stat, i) => (
-						<TrainingCard key={stat.toolName} stat={stat} rank={i} />
+						<TrainingCard key={stat.tool_name} stat={stat} rank={i} />
 					))}
 				</div>
 			</StatCard>
 
-			{/* Bar chart + ranking */}
 			<StatCard>
 				<SectionTitle>Adversários mais enfrentados</SectionTitle>
 
@@ -186,7 +105,7 @@ export default function OpponentChart({ replays, userId }: Props) {
 							formatter={(_value, _name, props) => {
 								const s = props.payload as CharStat;
 								return [
-									`${s.total} batalhas  •  ${s.wins}W / ${s.losses}L  •  ${s.winRate}% WR`,
+									`${s.total} batalhas  •  ${s.wins}W / ${s.losses}L  •  ${s.win_rate}% WR`,
 									s.name,
 								];
 							}}
@@ -194,8 +113,8 @@ export default function OpponentChart({ replays, userId }: Props) {
 						<Bar dataKey="total" radius={[0, 4, 4, 0]}>
 							{stats.map((s) => (
 								<Cell
-									key={s.toolName}
-									fill={s.winRate >= 50 ? "oklch(var(--su))" : "oklch(var(--er))"}
+									key={s.tool_name}
+									fill={s.win_rate >= 50 ? "oklch(var(--su))" : "oklch(var(--er))"}
 									fillOpacity={0.75}
 								/>
 							))}
@@ -217,12 +136,12 @@ export default function OpponentChart({ replays, userId }: Props) {
 						</thead>
 						<tbody>
 							{stats.map((s, i) => (
-								<tr key={s.toolName} className="hover">
+								<tr key={s.tool_name} className="hover">
 									<td className="text-base-content/40 font-mono">{i + 1}</td>
 									<td>
 										<div className="flex items-center gap-2">
 											<img
-												src={`${SF6_BASE}/material/character/character_${s.toolName}_l.png`}
+												src={`${SF6_BASE}/material/character/character_${s.tool_name}_l.png`}
 												alt={s.name}
 												className="w-8 h-8 object-contain"
 											/>
@@ -233,8 +152,8 @@ export default function OpponentChart({ replays, userId }: Props) {
 									<td className="text-center text-success font-semibold">{s.wins}</td>
 									<td className="text-center text-error font-semibold">{s.losses}</td>
 									<td className="text-center">
-										<span className={`badge badge-sm ${s.winRate >= 50 ? "badge-success" : "badge-error"}`}>
-											{s.winRate}%
+										<span className={`badge badge-sm ${s.win_rate >= 50 ? "badge-success" : "badge-error"}`}>
+											{s.win_rate}%
 										</span>
 									</td>
 								</tr>

@@ -1,41 +1,17 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
-import type { SF6Replay } from "../lib/types";
-import { getWinner } from "../lib/types";
+import type { WinLossStat } from "../lib/types";
 import StatCard from "./ui/StatCard";
 import SectionTitle from "./ui/SectionTitle";
 import WinRateBar from "./ui/WinRateBar";
 
-interface Props {
-	replays: SF6Replay[];
-	userId: string;
-}
+export default function WinLossChart({ data }: { data: WinLossStat | null }) {
+	if (!data || data.total === 0) return null;
 
-function findUserSide(replay: SF6Replay, userId: string): 1 | 2 | null {
-	if (replay.player1_info.player.short_id.toString() === userId) return 1;
-	if (replay.player2_info.player.short_id.toString() === userId) return 2;
-	if (replay.player1_info.player.fighter_id === userId) return 1;
-	if (replay.player2_info.player.fighter_id === userId) return 2;
-	return null;
-}
+	const { wins, losses, total, win_pct } = data;
+	const lossPct = 100 - win_pct;
 
-export default function WinLossChart({ replays, userId }: Props) {
-	let wins = 0;
-	let losses = 0;
-
-	for (const replay of replays) {
-		const side = findUserSide(replay, userId);
-		if (side === null) continue;
-		getWinner(replay) === side ? wins++ : losses++;
-	}
-
-	const total = wins + losses;
-	if (total === 0) return null;
-
-	const winPct = Math.round((wins / total) * 100);
-	const lossPct = 100 - winPct;
-
-	const data = [
-		{ name: "Vitórias", value: wins, pct: winPct },
+	const chartData = [
+		{ name: "Vitórias", value: wins, pct: win_pct },
 		{ name: "Derrotas", value: losses, pct: lossPct },
 	];
 
@@ -43,15 +19,14 @@ export default function WinLossChart({ replays, userId }: Props) {
 
 	return (
 		<StatCard className="mb-6" bodyClassName="gap-3">
-			<SectionTitle>Win Rate — página atual</SectionTitle>
+			<SectionTitle>Win Rate</SectionTitle>
 
 			<div className="flex items-center gap-6">
-				{/* Donut */}
 				<div className="w-36 h-36 shrink-0">
 					<ResponsiveContainer width="100%" height="100%">
 						<PieChart>
 							<Pie
-								data={data}
+								data={chartData}
 								cx="50%"
 								cy="50%"
 								innerRadius="60%"
@@ -61,13 +36,13 @@ export default function WinLossChart({ replays, userId }: Props) {
 								dataKey="value"
 								strokeWidth={0}
 							>
-								{data.map((_, i) => (
+								{chartData.map((_, i) => (
 									<Cell key={i} fill={COLORS[i]} />
 								))}
 							</Pie>
 							<Tooltip
 								formatter={(value, name) =>
-									[`${value} (${data.find((d) => d.name === name)?.pct}%)`, name]
+									[`${value} (${chartData.find((d) => d.name === name)?.pct}%)`, name]
 								}
 								contentStyle={{
 									background: "oklch(var(--b2))",
@@ -80,7 +55,6 @@ export default function WinLossChart({ replays, userId }: Props) {
 					</ResponsiveContainer>
 				</div>
 
-				{/* Stats */}
 				<div className="flex flex-col gap-3 flex-1">
 					<div className="flex items-center justify-between">
 						<span className="flex items-center gap-2 text-sm">
@@ -88,7 +62,7 @@ export default function WinLossChart({ replays, userId }: Props) {
 							Vitórias
 						</span>
 						<span className="font-bold text-success">
-							{wins} <span className="text-base-content/50 font-normal">({winPct}%)</span>
+							{wins} <span className="text-base-content/50 font-normal">({win_pct}%)</span>
 						</span>
 					</div>
 
@@ -111,7 +85,7 @@ export default function WinLossChart({ replays, userId }: Props) {
 				</div>
 			</div>
 
-			<WinRateBar winPct={winPct} />
+			<WinRateBar winPct={win_pct} />
 		</StatCard>
 	);
 }

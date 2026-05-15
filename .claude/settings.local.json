@@ -7,7 +7,10 @@
       "Bash(cp /Users/leoalemax/Workspace/@leonardoalemax/cfnview/pages/battlelog/\\\\[userId\\\\]/overlay.tsx /Users/leoalemax/Workspace/@leonardoalemax/cfnview/pages/battlelog/\\\\[userId\\\\]/overlay/index.tsx)",
       "Bash(rm /Users/leoalemax/Workspace/@leonardoalemax/cfnview/pages/battlelog/\\\\[userId\\\\]/overlay.tsx)",
       "Read(//Users/leoalemax/Workspace/@leonardoalemax/neo-shadaloo/**)",
-      "Bash(go build *)"
+      "Bash(go build *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(npx tsc *)",
+      "Bash(sed -i '' 's/^import \\($/import \\(\\\\n\\\\t\"context\"\\\\n\\\\t\"time\"/' /Users/leoalemax/Workspace/@leonardoalemax/neo-shadaloo/internal/api/handlers/battlelog.go)"
     ]
   }
 }
