@@ -2,16 +2,14 @@
 
 import CalendarHeatmap from "./CalendarHeatmap";
 import CharacterRanks from "./CharacterRanks";
-import FightingTable from "./FightingTable";
 import HistoryList from "./HistoryList";
 import HourlyHeatmap from "./HourlyHeatmap";
 import LPChart from "./LPChart";
 import OpponentChart from "./OpponentChart";
-import UsageChart from "./UsageChart";
 import WinLossChart from "./WinLossChart";
-import type { CalendarStat, CharacterOption, CharacterRankStat, CharStat, FightingSnapshot, HourlyStats, LPHistory, SF6Replay, UsageSnapshot, WinLossStat } from "../lib/types";
+import type { CalendarStat, CharacterOption, CharacterRankStat, CharStat, HourlyStats, LPHistory, SF6Replay, WinLossStat } from "../lib/types";
 
-const VALID_TABS = ["stats", "opponents", "history", "usage", "fighting"] as const;
+const VALID_TABS = ["stats", "opponents", "history"] as const;
 type Tab = (typeof VALID_TABS)[number];
 
 interface Props {
@@ -28,10 +26,6 @@ interface Props {
 	initialReplays: SF6Replay[];
 	totalPages: number;
 	historyCharacters: CharacterOption[];
-	usageMonths: string[];
-	usageInitialData: UsageSnapshot | null;
-	fightingMonths: string[];
-	fightingInitialData: FightingSnapshot | null;
 }
 
 export default function TabContent({
@@ -48,10 +42,6 @@ export default function TabContent({
 	initialReplays,
 	totalPages,
 	historyCharacters,
-	usageMonths,
-	usageInitialData,
-	fightingMonths,
-	fightingInitialData,
 }: Props) {
 	if (tab === "stats") return (
 		<div className="flex flex-col gap-4">
@@ -68,7 +58,5 @@ export default function TabContent({
 		</div>
 	);
 	if (tab === "opponents") return <OpponentChart data={opponentsData} />;
-	if (tab === "usage") return <UsageChart userId={userId} months={usageMonths} initialData={usageInitialData} />;
-	if (tab === "fighting") return <FightingTable months={fightingMonths} initialData={fightingInitialData} />;
 	return <HistoryList userId={userId} initialReplays={initialReplays} totalPages={totalPages} initialCharacters={historyCharacters} />;
 }

@@ -11,9 +11,11 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
+import clsx from "clsx";
 import type { CharacterOption, LPHistory } from "../lib/types";
 import StatCard from "./ui/StatCard";
 import SectionTitle from "./ui/SectionTitle";
+import { Tab, TabList } from "./ui/Tabs";
 
 const SF6_BASE = "https://www.streetfighter.com/6/buckler/assets/images";
 
@@ -86,7 +88,7 @@ export default function LPChart({ userId, defaultCharacter, initialData, initial
 					entries.length >= 2 ? (() => {
 						const delta = entries[entries.length - 1].lp - entries[0].lp;
 						return (
-							<span className={`text-xs font-semibold ${delta >= 0 ? "text-success" : "text-error"}`}>
+							<span className={clsx("text-xs font-semibold", delta >= 0 ? "text-success" : "text-error")}>
 								{delta >= 0 ? "+" : ""}{delta} LP
 							</span>
 						);
@@ -98,26 +100,14 @@ export default function LPChart({ userId, defaultCharacter, initialData, initial
 
 			{/* Character selector */}
 			{characters.length > 0 && (
-				<div className="overflow-x-auto -mx-1 px-1 mb-3">
-					<div role="tablist" className="tabs tabs-box flex-nowrap min-w-max">
-						{characters.map((c) => (
-							<button
-								key={c.tool_name}
-								role="tab"
-								className={`tab px-2 ${selected === c.tool_name ? "tab-active" : ""}`}
-								onClick={() => setSelected(c.tool_name)}
-							>
-								<img
-									src={characterFace(c.tool_name)}
-									alt={c.name}
-									className="w-6 h-6 rounded-full object-cover"
-									title={c.name}
-								/>
-								<span className="ml-1 hidden sm:inline text-xs">{c.name}</span>
-							</button>
-						))}
-					</div>
-				</div>
+				<TabList scrollable className="mb-3">
+					{characters.map((c) => (
+						<Tab key={c.tool_name} active={selected === c.tool_name} onClick={() => setSelected(c.tool_name)} className="px-2">
+							<img src={characterFace(c.tool_name)} alt={c.name} className="w-6 h-6 rounded-full object-cover" title={c.name} />
+							<span className="ml-1 hidden sm:inline text-xs">{c.name}</span>
+						</Tab>
+					))}
+				</TabList>
 			)}
 
 			{loading && (

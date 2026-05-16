@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { CharUsageEntry, UsageSnapshot } from "../lib/types";
 import StatCard from "./ui/StatCard";
@@ -52,104 +52,84 @@ function UsageBar({ entry, max }: { entry: CharUsageEntry; max: number }) {
 }
 
 interface UsageChartProps {
-	userId: string;
 	months: string[];
 	initialData: UsageSnapshot | null;
+	month: string;
+	type: string;
+	league: string; // alpha (ex: "MASTER") ou "" para o primeiro disponível
 }
 
-export default function UsageChart({ userId, months, initialData }: UsageChartProps) {
+export default function UsageChart({ months, initialData, month, type, league }: UsageChartProps) {
 	const router = useRouter();
-	const searchParams = useSearchParams();
 	const monthOptions = months.map(toMonthOption);
-	const selectedMonth = searchParams.get("m") ?? (months[0] ?? "");
-	const selectedLeague = searchParams.get("l") ?? "";
-	const selectedOpType = searchParams.get("t") ?? "0";
 
 	const [data, setData] = useState<UsageSnapshot | null>(initialData);
 	const [loading, setLoading] = useState(false);
 
+	// Sincroniza com nova prop quando o servidor renderiza outro mês
 	useEffect(() => {
-		if (selectedMonth === (months[0] ?? "") && initialData) return;
-		let cancelled = false;
-		let retries = 0;
+		setData(initialData);
+	}, [initialData, month]);
 
-		async function load() {
-			setLoading(true);
-			while (retries <= 6) {
-				const res = await fetch(`/api/usage/${selectedMonth}`);
-				const d: UsageSnapshot = await res.json();
-				if (cancelled) return;
-				if (d.leagues && d.leagues.length > 0) {
-					setData(d);
-					setLoading(false);
-					return;
-				}
-				retries++;
-				if (retries > 6) break;
-				await new Promise((r) => setTimeout(r, 2500));
-			}
-			if (!cancelled) { setData(null); setLoading(false); }
-		}
-
-		setData(null);
-		load();
-		return () => { cancelled = true; };
-	}, [selectedMonth]);
-
-	function setParam(key: string, value: string) {
-		const params = new URLSearchParams(searchParams.toString());
-		params.set(key, value);
-		router.push(`/battlelog/${userId}/usage?${params.toString()}`, { scroll: false });
+	function navigate(nextMonth: string, nextType: string, nextLeague: string) {
+		const l = nextLeague ? encodeURIComponent(nextLeague) : "all";
+		router.push(`/dados/usage/${nextMonth}/${nextType}/${l}`, { scroll: false });
 	}
 
 	const allLeagues = data?.leagues ?? [];
-	const opTypeInt = parseInt(selectedOpType, 10);
+	const opTypeInt = parseInt(type, 10);
 	const filteredLeagues = allLeagues.filter((l) => l.operation_type === opTypeInt);
 	const leagueTabs = allLeagues
 		.filter((l) => l.operation_type === 0)
 		.sort((a, b) => a.league_rank - b.league_rank)
 		.map((l) => ({ rank: l.league_rank, alpha: l.league_alpha }));
 
-	const activeLeague = filteredLeagues.find((l) => l.league_alpha === selectedLeague) ?? filteredLeagues[0];
+	const activeLeague = filteredLeagues.find((l) => l.league_alpha === league) ?? filteredLeagues[0];
 	const entries = activeLeague?.entries ?? [];
 	const max = entries.length > 0 ? Math.max(...entries.map((e) => e.play_rate)) : 1;
 
 	return (
-		<StatCard>
-			<SectionTitle>Uso de personagens</SectionTitle>
-
+		<>
+			{/* Filtros — bloco separado, fora do resultado */}
 			{allLeagues.length > 0 && (
-				<StatsFilters
-					monthOptions={monthOptions}
-					selectedMonth={selectedMonth}
-					onMonthChange={(v) => setParam("m", v)}
-					selectedInputType={selectedOpType}
-					onInputTypeChange={(v) => setParam("t", v)}
-					leagueTabs={leagueTabs}
-					selectedLeague={activeLeague?.league_alpha ?? ""}
-					onLeagueChange={(v) => setParam("l", v)}
-				/>
+				<StatCard>
+					<StatsFilters
+						monthOptions={monthOptions}
+						selectedMonth={month}
+						onMonthChange={(v) => navigate(v, type, league)}
+						selectedInputType={type}
+						onInputTypeChange={(v) => navigate(month, v, league)}
+						leagueTabs={leagueTabs}
+						selectedLeague={activeLeague?.league_alpha ?? ""}
+						onLeagueChange={(v) => navigate(month, type, v)}
+					/>
+				</StatCard>
 			)}
 
-			{loading && (
-				<div className="flex justify-center py-8">
-					<span className="loading loading-spinner loading-md" />
-				</div>
-			)}
+			{/* Resultado */}
+			<StatCard>
+				<SectionTitle>Uso de personagens</SectionTitle>
 
-			{!loading && entries.length === 0 && (
-				<p className="text-sm text-base-content/40 text-center py-8">
-					Sem dados para este período.
-				</p>
-			)}
+				{loading && (
+					<div className="flex justify-center py-8">
+						<span className="loading loading-spinner loading-md" />
+					</div>
+				)}
 
-			{!loading && entries.length > 0 && (
-				<div className="flex flex-col gap-3">
-					{entries.map((entry) => (
-						<UsageBar key={entry.character_tool_name} entry={entry} max={max} />
-					))}
-				</div>
-			)}
-		</StatCard>
+				{!loading && entries.length === 0 && (
+					<p className="text-sm text-base-content/40 text-center py-8">
+						Sem dados para este período.
+					</p>
+				)}
+
+				{!loading && entries.length > 0 && (
+					<div className="flex flex-col gap-3">
+						{entries.map((entry) => (
+							<UsageBar key={entry.character_tool_name} entry={entry} max={max} />
+						))}
+					</div>
+				)}
+			</StatCard>
+		</>
 	);
 }

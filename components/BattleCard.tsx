@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import Image from "next/image";
 import Link from "next/link";
 import styles from "./BattleCard.module.scss";
@@ -57,9 +58,7 @@ function CardHeader({
 					</span>
 				</div>
 				<span
-					className={`badge badge-sm font-bold px-3 py-3 text-white ${
-						p1wins ? "badge-error" : "badge-success"
-					}`}>
+					className={clsx("badge badge-sm font-bold px-3 py-3 text-white", p1wins ? "badge-error" : "badge-success")}>
 					{replay.replay_battle_type_name}
 				</span>
 			</div>
@@ -142,7 +141,7 @@ function PlayerSide({
 				/>
 			</div>
 			<div
-				className={`flex items-center gap-2 ${isRight ? "flex-row-reverse" : ""}`}>
+				className={clsx("flex items-center gap-2", isRight && "flex-row-reverse")}>
 				<span className='text-sm font-bold whitespace-nowrap'>
 					{info.league_point.toLocaleString("pt-BR")} LP
 				</span>
@@ -153,9 +152,7 @@ function PlayerSide({
 	const nameRow = (
 		<Link
 			href={`/battlelog/${info.player.short_id}/stats`}
-			className={`flex items-center gap-1 text-sm font-semibold min-w-0 hover:text-primary transition-colors ${
-				isRight ? "flex-row-reverse" : ""
-			}`}>
+			className={clsx("flex items-center gap-1 text-sm font-semibold min-w-0 hover:text-primary transition-colors", isRight && "flex-row-reverse")}>
 			<Image
 				src={controlImg(info.battle_input_type)}
 				alt=''
@@ -180,7 +177,7 @@ function PlayerSide({
 
 	const portrait = (
 		<div
-			className={`relative shrink-0 ${!isWinner ? "opacity-40 grayscale" : ""}`}>
+			className={clsx("relative shrink-0", !isWinner && "opacity-40 grayscale")}>
 			<Image
 				src={characterImg(info.playing_character_tool_name, charSide)}
 				alt={info.playing_character_name}
@@ -194,23 +191,23 @@ function PlayerSide({
 
 	const resultLabel = (
 		<span
-			className={`text-base font-black tracking-widest ${isWinner ? "text-success" : "text-base-content/40"}`}>
+			className={clsx("text-base font-black tracking-widest", isWinner ? "text-success" : "text-base-content/40")}>
 			{isWinner ? "WINS" : "LOSES"}
 		</span>
 	);
 
 	return (
 		<div
-			className={`flex items-center gap-3 flex-1 min-w-0 ${isRight ? "flex-row-reverse" : ""}`}>
+			className={clsx("flex items-center gap-3 flex-1 min-w-0", isRight && "flex-row-reverse")}>
 			{/* Info column */}
 			<div
-				className={`flex flex-col gap-1.5 min-w-0 flex-1 ${isRight ? "items-end" : "items-start"}`}>
+				className={clsx("flex flex-col gap-1.5 min-w-0 flex-1", isRight ? "items-end" : "items-start")}>
 				{nameRow}
 				{rankRow}
 			</div>
 
 			{/* Portrait + result */}
-			<div className={`flex flex-col items-center gap-1`}>
+			<div className="flex flex-col items-center gap-1">
 				{portrait}
 				{resultLabel}
 			</div>

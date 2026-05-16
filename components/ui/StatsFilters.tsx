@@ -1,5 +1,7 @@
 "use client";
 
+import { Tab, TabList } from "./Tabs";
+
 const SF6_BASE = "https://www.streetfighter.com/6/buckler/assets/images";
 
 export function rankImg(rank: number) {
@@ -56,42 +58,28 @@ export default function StatsFilters({
 					))}
 				</select>
 
-				<div role="tablist" className="tabs tabs-box">
+				<TabList>
 					{INPUT_TYPES.map(({ value, label, icon }) => (
-						<button
-							key={value}
-							role="tab"
-							onClick={() => onInputTypeChange(value)}
-							className={`tab gap-1.5 ${selectedInputType === value ? "tab-active" : ""}`}
-						>
+						<Tab key={value} active={selectedInputType === value} onClick={() => onInputTypeChange(value)} className="gap-1.5">
 							{icon && <img src={icon} alt={label} className="w-4 h-4 object-contain" />}
 							{label}
-						</button>
+						</Tab>
 					))}
-				</div>
+				</TabList>
 			</div>
 
 			{leagueTabs.length > 0 && (
-				<div role="tablist" className="tabs tabs-box w-full">
+				<TabList className="w-full">
 					{leagueTabs.map((l) => (
-						<button
-							key={l.alpha}
-							role="tab"
-							onClick={() => onLeagueChange(l.alpha)}
-							className={`tab flex-1 flex-col gap-0.5 h-auto py-1.5 ${selectedLeague === l.alpha ? "tab-active" : ""}`}
-						>
+						<Tab key={`${l.rank}-${l.alpha}`} active={selectedLeague === l.alpha} onClick={() => onLeagueChange(l.alpha)} className="flex-1 flex-col gap-0.5 h-auto py-1.5">
 							{l.rank > 0 ? (
-								<img
-									src={rankImg(l.rank)}
-									alt={l.alpha}
-									className="w-7 h-7 object-contain"
-								/>
+								<img src={rankImg(l.rank)} alt={l.alpha} className="w-7 h-7 object-contain" />
 							) : (
 								<span className="text-xs font-semibold">{l.alpha}</span>
 							)}
-						</button>
+						</Tab>
 					))}
-				</div>
+				</TabList>
 			)}
 		</div>
 	);

@@ -259,3 +259,12 @@ export interface CachedBattlelog {
 	cachedAt: number;
 	bannerInfo?: SF6FighterBannerInfo;
 }
+
+// ─── Ranking ──────────────────────────────────────────────────────────────────
+
+export interface CountryPlayerCount {
+	home_id: number;
+	country_name: string;
+	iso3: string;
+	player_count: number;
+}

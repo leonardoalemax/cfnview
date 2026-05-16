@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import {
 	Bar,
 	BarChart,
@@ -152,7 +153,7 @@ export default function OpponentChart({ data: stats }: { data: CharStat[] | null
 									<td className="text-center text-success font-semibold">{s.wins}</td>
 									<td className="text-center text-error font-semibold">{s.losses}</td>
 									<td className="text-center">
-										<span className={`badge badge-sm ${s.win_rate >= 50 ? "badge-success" : "badge-error"}`}>
+										<span className={clsx("badge badge-sm", s.win_rate >= 50 ? "badge-success" : "badge-error")}>
 											{s.win_rate}%
 										</span>
 									</td>

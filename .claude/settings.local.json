@@ -10,7 +10,10 @@
       "Bash(go build *)",
       "Bash(echo \"exit: $?\")",
       "Bash(npx tsc *)",
-      "Bash(sed -i '' 's/^import \\($/import \\(\\\\n\\\\t\"context\"\\\\n\\\\t\"time\"/' /Users/leoalemax/Workspace/@leonardoalemax/neo-shadaloo/internal/api/handlers/battlelog.go)"
+      "Bash(sed -i '' 's/^import \\($/import \\(\\\\n\\\\t\"context\"\\\\n\\\\t\"time\"/' /Users/leoalemax/Workspace/@leonardoalemax/neo-shadaloo/internal/api/handlers/battlelog.go)",
+      "Bash(gh pr create --title 'fix\\(sf6\\): dedupe leagues when merging regular + master endpoints' --body ' *)",
+      "Bash(chmod +x /Users/leoalemax/Workspace/@leonardoalemax/neo-shadaloo/scripts/test-ranking-pagesize.sh)",
+      "Bash(make swagger *)"
     ]
   }
 }

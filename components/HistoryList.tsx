@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import BattleCard from "./BattleCard";
+import { Tab, TabList } from "./ui/Tabs";
 import type { CharacterOption, ReplayPage, SF6Replay } from "../lib/types";
 
 const PAGE_SIZE = 20;
@@ -139,55 +140,32 @@ export default function HistoryList({ userId, initialReplays, totalPages, initia
 				{/* Battle type filter */}
 				<div>
 					<div className="text-xs text-base-content/50 mb-2">Tipo de partida</div>
-					<div role="tablist" className="tabs tabs-box">
+					<TabList>
 						{[
 							{ value: 0, label: "Todos" },
 							{ value: 1, label: "Ranked" },
 							{ value: 6, label: "Custom Room" },
 						].map(({ value, label }) => (
-							<button
-								key={value}
-								role="tab"
-								className={`tab ${battleType === value ? "tab-active" : ""}`}
-								onClick={() => setBattleType(value)}
-							>
+							<Tab key={value} active={battleType === value} onClick={() => setBattleType(value)}>
 								{label}
-							</button>
+							</Tab>
 						))}
-					</div>
+					</TabList>
 				</div>
 
 				{/* Character filter */}
 				{characters.length > 0 && (
 					<div>
 						<div className="text-xs text-base-content/50 mb-2">Personagem</div>
-						<div className="overflow-x-auto -mx-1 px-1">
-							<div role="tablist" className="tabs tabs-box flex-nowrap min-w-max">
-								<button
-									role="tab"
-									className={`tab ${character === "" ? "tab-active" : ""}`}
-									onClick={() => setCharacter("")}
-								>
-									Todos
-								</button>
-								{characters.map((c) => (
-									<button
-										key={c.tool_name}
-										role="tab"
-										className={`tab px-2 ${character === c.tool_name ? "tab-active" : ""}`}
-										onClick={() => setCharacter(c.tool_name)}
-									>
-										<img
-											src={characterFace(c.tool_name)}
-											alt={c.name}
-											className="w-6 h-6 rounded-full object-cover"
-											title={c.name}
-										/>
-										<span className="ml-1 hidden sm:inline">{c.name}</span>
-									</button>
-								))}
-							</div>
-						</div>
+						<TabList scrollable>
+							<Tab active={character === ""} onClick={() => setCharacter("")}>Todos</Tab>
+							{characters.map((c) => (
+								<Tab key={c.tool_name} active={character === c.tool_name} onClick={() => setCharacter(c.tool_name)} className="px-2">
+									<img src={characterFace(c.tool_name)} alt={c.name} className="w-6 h-6 rounded-full object-cover" title={c.name} />
+									<span className="ml-1 hidden sm:inline">{c.name}</span>
+								</Tab>
+							))}
+						</TabList>
 					</div>
 				)}
 

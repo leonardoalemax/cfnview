@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { useEffect, useState } from "react";
 import BattleCard from "../BattleCard";
 import { type SF6Replay } from "../../lib/types";
@@ -30,9 +31,7 @@ export default function BattlesCarousel({ replays }: Props) {
 			{replays.map((replay, i) => (
 				<div
 					key={replay.replay_id}
-					className={`absolute inset-0 transition-opacity duration-700 overflow-auto p-2 ${
-						i === activeSlide ? "opacity-100" : "opacity-0 pointer-events-none"
-					}`}
+					className={clsx("absolute inset-0 transition-opacity duration-700 overflow-auto p-2", i === activeSlide ? "opacity-100" : "opacity-0 pointer-events-none")}
 				>
 					<BattleCard replay={replay} compact />
 				</div>
@@ -41,9 +40,7 @@ export default function BattlesCarousel({ replays }: Props) {
 				{replays.map((_, i) => (
 					<span
 						key={i}
-						className={`h-2 rounded-full transition-all duration-300 ${
-							i === activeSlide ? "bg-white/80 w-6" : "bg-white/25 w-2"
-						}`}
+						className={clsx("h-2 rounded-full transition-all duration-300", i === activeSlide ? "bg-white/80 w-6" : "bg-white/25 w-2")}
 					/>
 				))}
 			</div>

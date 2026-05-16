@@ -55,16 +55,21 @@ export default function PlayerSearch() {
 		return () => document.removeEventListener("mousedown", onClickOutside);
 	}, []);
 
+	function saveAndNavigate(shortId: string) {
+		localStorage.setItem("cfnview_user_id", shortId);
+		router.push(`/battlelog/${shortId}/stats`);
+	}
+
 	function select(player: PlayerEntry) {
 		setOpen(false);
 		setQuery("");
-		router.push(`/battlelog/${player.short_id}/stats`);
+		saveAndNavigate(String(player.short_id));
 	}
 
 	function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
 		if (results.length > 0) select(results[0]);
-		else if (query.trim()) router.push(`/battlelog/${query.trim()}/stats`);
+		else if (query.trim()) saveAndNavigate(query.trim());
 	}
 
 	return (

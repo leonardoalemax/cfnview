@@ -1,3 +1,5 @@
+import clsx from "clsx";
+
 interface StatCardProps {
 	children: React.ReactNode;
 	className?: string;
@@ -17,8 +19,8 @@ export default function StatCard({
 				clipPath:
 					"polygon(min(1.1979166667vw,23px) 0,100% 0,100% calc(100% - min(1.1979166667vw, 23px)),calc(100% - min(1.1979166667vw, 23px)) 100%,0 100%,0 min(1.1979166667vw,23px))",
 			}}
-			className={`card bg-no-repeat bg-right ${className}`}>
-			<div className={`card-body p-4 gap-4 ${bodyClassName}`}>
+			className={clsx("card bg-no-repeat bg-right", className)}>
+			<div className={clsx("card-body p-4 gap-4", bodyClassName)}>
 				{children}
 			</div>
 		</div>

@@ -20,3 +20,55 @@ body {
 	color: rgb(var(--foreground-rgb));
 	background-image: url(https://www.streetfighter.com/6/assets/images/news/bg_news.jpg);
 }
+
+/* Painel SF6 — fundo translúcido com cantos cortados em diagonal */
+.sf6-panel {
+	background: rgba(30, 30, 79, 0.6);
+	border-radius: initial;
+	clip-path: polygon(
+		min(1.1979166667vw, 23px) 0,
+		100% 0,
+		100% calc(100% - min(1.1979166667vw, 23px)),
+		calc(100% - min(1.1979166667vw, 23px)) 100%,
+		0 100%,
+		0 min(1.1979166667vw, 23px)
+	);
+}
+
+.sf6-bar {
+	background: rgba(174, 174, 203, 0.4);
+	clip-path: polygon(
+		min(1.1979166667vw, 23px) 0,
+		100% 0,
+		100% calc(100% - min(1.1979166667vw, 23px)),
+		calc(100% - min(1.1979166667vw, 23px)) 100%,
+		0 100%,
+		0 min(1.1979166667vw, 23px)
+	);
+}
+
+.sf6-panel .active {
+	background: rgba(39, 39, 106, 0.6) !important;
+	border-radius: initial;
+	clip-path: polygon(
+		min(1.1979166667vw, 23px) 0,
+		100% 0,
+		100% calc(100% - min(1.1979166667vw, 23px)),
+		calc(100% - min(1.1979166667vw, 23px)) 100%,
+		0 100%,
+		0 min(1.1979166667vw, 23px)
+	);
+}
+
+.sf6-panel .disabled {
+	background: transparent !important;
+	border-radius: initial;
+	clip-path: polygon(
+		min(1.1979166667vw, 23px) 0,
+		100% 0,
+		100% calc(100% - min(1.1979166667vw, 23px)),
+		calc(100% - min(1.1979166667vw, 23px)) 100%,
+		0 100%,
+		0 min(1.1979166667vw, 23px)
+	);
+}
