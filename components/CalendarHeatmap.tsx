@@ -26,11 +26,11 @@ function winRateColor(wins: number, total: number): string {
 }
 
 function battlesColor(total: number, maxBattles: number): string {
-	if (maxBattles === 0) return "hsl(220, 60%, 20%)";
+	if (maxBattles === 0) return "hsl(140, 40%, 15%)";
 	const intensity = Math.min(total / maxBattles, 1);
-	const l = 20 + intensity * 35;
-	const s = 50 + intensity * 30;
-	return `hsl(220, ${Math.round(s)}%, ${Math.round(l)}%)`;
+	const l = 15 + intensity * 30;
+	const s = 40 + intensity * 30;
+	return `hsl(140, ${Math.round(s)}%, ${Math.round(l)}%)`;
 }
 
 function buildWeeks(byDay: CalendarStat["by_day"]) {
