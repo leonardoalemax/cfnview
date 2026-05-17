@@ -1,7 +1,5 @@
 import { notFound } from "next/navigation";
-import UserHeader from "../../../../components/UserHeader";
 import PageLayout from "../../../../components/ui/PageLayout";
-import { Tab, TabList } from "../../../../components/ui/Tabs";
 import TabContent from "../../../../components/TabContent";
 import type {
 	CalendarStat,
@@ -18,12 +16,6 @@ import type {
 
 const VALID_TABS = ["stats", "opponents", "history"] as const;
 type Tab = (typeof VALID_TABS)[number];
-
-const TAB_LABELS: Record<Tab, string> = {
-	stats: "Stats",
-	opponents: "Adversários",
-	history: "Histórico",
-};
 
 const BASE = process.env.GO_API_URL;
 const NO_STORE = { cache: "no-store" } as const;
@@ -63,7 +55,9 @@ export default async function BattlelogPage({ params }: Props) {
 
 		const tabFetch =
 			currentTab === "history"
-				? get<ReplayPage>(`/v1/battlelog/${userId}/replays?page=1&limit=20`)
+				? get<ReplayPage>(
+						`/v1/battlelog/${userId}/replays?page=1&limit=20`,
+					)
 				: currentTab === "stats"
 					? get<WinLossStat>(`/v1/battlelog/${userId}/stats`)
 					: get<CharStat[]>(`/v1/battlelog/${userId}/opponents`);
@@ -84,7 +78,9 @@ export default async function BattlelogPage({ params }: Props) {
 						)
 					: Promise.resolve(null),
 				isStats
-					? get<CharacterOption[]>(`/v1/battlelog/${userId}/characters`)
+					? get<CharacterOption[]>(
+							`/v1/battlelog/${userId}/characters`,
+						)
 					: Promise.resolve(null),
 			]);
 
@@ -110,7 +106,8 @@ export default async function BattlelogPage({ params }: Props) {
 			// default to profile's favorite character, or first played character
 			const profileChar = bannerInfo?.favorite_character_tool_name ?? "";
 			defaultCharacter =
-				lpCharacters.find((c) => c.tool_name === profileChar)?.tool_name ??
+				lpCharacters.find((c) => c.tool_name === profileChar)
+					?.tool_name ??
 				lpCharacters[0]?.tool_name ??
 				"";
 			if (defaultCharacter) {
@@ -130,23 +127,12 @@ export default async function BattlelogPage({ params }: Props) {
 	}
 
 	return (
-		<PageLayout character={bannerInfo?.favorite_character_name?.toLowerCase()}>
-			{bannerInfo && <UserHeader info={bannerInfo} />}
-
-			<TabList scrollable className='mb-6'>
-				{VALID_TABS.map((t) => (
-					<Tab
-						key={t}
-						active={currentTab === t}
-						href={`/battlelog/${userId}/${t}`}>
-						{TAB_LABELS[t]}
-					</Tab>
-				))}
-			</TabList>
-
+		<PageLayout
+			character={bannerInfo?.favorite_character_name?.toLowerCase()}>
 			<TabContent
 				tab={currentTab}
 				userId={userId}
+				bannerInfo={bannerInfo}
 				initialReplays={initialReplays}
 				totalPages={totalPages}
 				statsData={statsData}

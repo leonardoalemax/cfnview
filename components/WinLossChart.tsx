@@ -1,3 +1,5 @@
+"use client";
+
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import type { WinLossStat } from "../lib/types";
 import StatCard from "./ui/StatCard";
@@ -15,7 +17,7 @@ export default function WinLossChart({ data }: { data: WinLossStat | null }) {
 		{ name: "Derrotas", value: losses, pct: lossPct },
 	];
 
-	const COLORS = ["oklch(var(--su))", "oklch(var(--er))"];
+	const COLORS = ["#36d399", "#f87272"];
 
 	return (
 		<StatCard className="mb-6" bodyClassName="gap-3">
@@ -45,8 +47,8 @@ export default function WinLossChart({ data }: { data: WinLossStat | null }) {
 									[`${value} (${chartData.find((d) => d.name === name)?.pct}%)`, name]
 								}
 								contentStyle={{
-									background: "oklch(var(--b2))",
-									border: "1px solid oklch(var(--b3))",
+									background: "#1d232a",
+									border: "1px solid #2a323c",
 									borderRadius: "0.5rem",
 									fontSize: "0.75rem",
 								}}

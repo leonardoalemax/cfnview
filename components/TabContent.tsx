@@ -1,13 +1,12 @@
-"use client";
-
 import CalendarHeatmap from "./CalendarHeatmap";
 import CharacterRanks from "./CharacterRanks";
 import HistoryList from "./HistoryList";
 import HourlyHeatmap from "./HourlyHeatmap";
 import LPChart from "./LPChart";
 import OpponentChart from "./OpponentChart";
+import UserHeader from "./UserHeader";
 import WinLossChart from "./WinLossChart";
-import type { CalendarStat, CharacterOption, CharacterRankStat, CharStat, HourlyStats, LPHistory, SF6Replay, WinLossStat } from "../lib/types";
+import type { CalendarStat, CharacterOption, CharacterRankStat, CharStat, HourlyStats, LPHistory, SF6FighterBannerInfo, SF6Replay, WinLossStat } from "../lib/types";
 
 const VALID_TABS = ["stats", "opponents", "history"] as const;
 type Tab = (typeof VALID_TABS)[number];
@@ -15,6 +14,7 @@ type Tab = (typeof VALID_TABS)[number];
 interface Props {
 	tab: Tab;
 	userId: string;
+	bannerInfo: SF6FighterBannerInfo | null;
 	statsData: WinLossStat | null;
 	opponentsData: CharStat[] | null;
 	calendarData: CalendarStat | null;
@@ -31,6 +31,7 @@ interface Props {
 export default function TabContent({
 	tab,
 	userId,
+	bannerInfo,
 	statsData,
 	opponentsData,
 	calendarData,
@@ -45,6 +46,7 @@ export default function TabContent({
 }: Props) {
 	if (tab === "stats") return (
 		<div className="flex flex-col gap-4">
+			{bannerInfo && <UserHeader info={bannerInfo} />}
 			<WinLossChart data={statsData} />
 			<CharacterRanks data={characterRanks} />
 			<LPChart
