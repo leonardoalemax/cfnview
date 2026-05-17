@@ -135,6 +135,20 @@ export interface CharStat {
 	priority_score: number;
 }
 
+export interface TrainingSuggestion {
+	name: string;
+	tool_name: string;
+	total: number;
+	wins: number;
+	losses: number;
+	clean_losses: number;
+	close_losses: number;
+	win_rate: number;
+	usage_rate: number;
+	matchup_wr: number;
+	priority_score: number;
+}
+
 export interface CalendarStat {
 	by_day: Record<string, { wins: number; total: number }>;
 	by_weekday: Array<{ wins: number; total: number }>;

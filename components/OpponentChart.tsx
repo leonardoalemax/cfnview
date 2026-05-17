@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import clsx from "clsx";
 import {
 	Bar,
@@ -11,7 +11,7 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import type { CharStat, CharacterOption } from "../lib/types";
+import type { CharStat, CharacterOption, TrainingSuggestion } from "../lib/types";
 import StatCard from "./ui/StatCard";
 import SectionTitle from "./ui/SectionTitle";
 import StatRow from "./ui/StatRow";
@@ -19,7 +19,7 @@ import StatRow from "./ui/StatRow";
 const SF6_BASE = "https://www.streetfighter.com/6/buckler/assets/images";
 const MEDALS = ["🥇", "🥈", "🥉"];
 
-function TrainingCard({ stat, rank }: { stat: CharStat; rank: number }) {
+function TrainingCard({ stat, rank }: { stat: TrainingSuggestion; rank: number }) {
 	const lossRate = 100 - stat.win_rate;
 
 	return (
@@ -55,6 +55,20 @@ function TrainingCard({ stat, rank }: { stat: CharStat; rank: number }) {
 						value={stat.close_losses}
 						valueClassName="text-base-content/60"
 					/>
+					{stat.usage_rate > 0 && (
+						<StatRow
+							label="Uso global"
+							value={`${stat.usage_rate.toFixed(1)}%`}
+							valueClassName="text-info"
+						/>
+					)}
+					{stat.matchup_wr > 0 && (
+						<StatRow
+							label="Matchup"
+							value={`${stat.matchup_wr.toFixed(1)}%`}
+							valueClassName={stat.matchup_wr >= 50 ? "text-success" : "text-error"}
+						/>
+					)}
 				</div>
 
 				<div className="w-full h-1.5 rounded-full bg-success overflow-hidden">
@@ -75,14 +89,36 @@ interface Props {
 export default function OpponentChart({ data: initialData, userId, characters }: Props) {
 	const [selected, setSelected] = useState("");
 	const [stats, setStats] = useState(initialData);
+	const [training, setTraining] = useState<TrainingSuggestion[] | null>(null);
 	const [loading, setLoading] = useState(false);
+	const [trainingLoaded, setTrainingLoaded] = useState(false);
+
+	// Fetch training suggestions on mount
+	const fetchTraining = useCallback((character: string) => {
+		const q = character ? `?character=${character}` : "";
+		fetch(`${process.env.NEXT_PUBLIC_GO_API_URL}/v1/battlelog/${userId}/training${q}`)
+			.then((r) => r.json())
+			.then((d) => setTraining(d))
+			.catch(() => {});
+	}, [userId]);
+
+	// Load training on first render
+	if (!trainingLoaded) {
+		setTrainingLoaded(true);
+		fetchTraining("");
+	}
 
 	const fetchOpponents = useCallback((character: string) => {
 		setLoading(true);
 		const q = character ? `?character=${character}` : "";
-		fetch(`${process.env.NEXT_PUBLIC_GO_API_URL}/v1/battlelog/${userId}/opponents${q}`)
-			.then((r) => r.json())
-			.then((d) => setStats(d))
+		Promise.all([
+			fetch(`${process.env.NEXT_PUBLIC_GO_API_URL}/v1/battlelog/${userId}/opponents${q}`).then((r) => r.json()),
+			fetch(`${process.env.NEXT_PUBLIC_GO_API_URL}/v1/battlelog/${userId}/training${q}`).then((r) => r.json()),
+		])
+			.then(([oppData, trainData]) => {
+				setStats(oppData);
+				setTraining(trainData);
+			})
 			.catch(() => {})
 			.finally(() => setLoading(false));
 	}, [userId]);
@@ -94,9 +130,13 @@ export default function OpponentChart({ data: initialData, userId, characters }:
 
 	if (!stats || stats.length === 0) return null;
 
-	const trainingTargets = [...stats]
-		.sort((a, b) => b.priority_score - a.priority_score)
-		.slice(0, 3);
+	const trainingTargets = training
+		? [...training].sort((a, b) => b.priority_score - a.priority_score).slice(0, 3)
+		: [...stats].sort((a, b) => b.priority_score - a.priority_score).slice(0, 3).map((s) => ({
+			...s,
+			usage_rate: 0,
+			matchup_wr: 0,
+		}));
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -121,7 +161,7 @@ export default function OpponentChart({ data: initialData, userId, characters }:
 			)}
 
 			<StatCard>
-				<SectionTitle subtitle="Baseado na frequência de batalhas × taxa de derrota">
+				<SectionTitle subtitle="Baseado em derrotas pessoais, uso global do personagem e matchup oficial">
 					Personagens para treinar
 				</SectionTitle>
 				<div className="flex gap-3">
@@ -132,7 +172,7 @@ export default function OpponentChart({ data: initialData, userId, characters }:
 			</StatCard>
 
 			<StatCard>
-				<SectionTitle>Adversários mais enfrentados</SectionTitle>
+				<SectionTitle>Adversarios mais enfrentados</SectionTitle>
 
 				<ResponsiveContainer width="100%" height={Math.max(180, stats.length * 32)}>
 					<BarChart
