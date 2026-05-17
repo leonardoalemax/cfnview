@@ -1,14 +1,19 @@
+"use client";
+
+import { useState } from "react";
 import type { CalendarStat } from "../lib/types";
 import StatCard from "./ui/StatCard";
 import SectionTitle from "./ui/SectionTitle";
 
 const MONTHS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-const DAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+const DAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"];
 
 const CELL = 12;
 const GAP = 3;
 const STEP = CELL + GAP;
 const DAY_COL_W = 28;
+
+type Mode = "winrate" | "battles";
 
 function toDateKey(d: Date): string {
 	return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -18,6 +23,14 @@ function winRateColor(wins: number, total: number): string {
 	const pct = wins / total;
 	const h = pct <= 0.5 ? pct * 2 * 30 : 30 + (pct - 0.5) * 2 * 90;
 	return `hsl(${Math.round(h)}, 75%, 45%)`;
+}
+
+function battlesColor(total: number, maxBattles: number): string {
+	if (maxBattles === 0) return "hsl(220, 60%, 20%)";
+	const intensity = Math.min(total / maxBattles, 1);
+	const l = 20 + intensity * 35;
+	const s = 50 + intensity * 30;
+	return `hsl(220, ${Math.round(s)}%, ${Math.round(l)}%)`;
 }
 
 function buildWeeks(byDay: CalendarStat["by_day"]) {
@@ -98,24 +111,33 @@ function WeekdayChart({ byWeekday }: { byWeekday: CalendarStat["by_weekday"] }) 
 }
 
 export default function CalendarHeatmap({ data }: { data: CalendarStat | null }) {
+	const [mode, setMode] = useState<Mode>("winrate");
+
 	if (!data) return null;
 
 	const { weeks, monthLabels } = buildWeeks(data.by_day);
 
-	let totalBattles = 0, totalWins = 0, activeDays = 0;
+	let totalBattles = 0, totalWins = 0, activeDays = 0, maxDayBattles = 0;
 	for (const s of Object.values(data.by_day)) {
 		totalBattles += s.total;
 		totalWins += s.wins;
 		activeDays++;
+		if (s.total > maxDayBattles) maxDayBattles = s.total;
 	}
 	const overallWR = totalBattles > 0 ? Math.round((totalWins / totalBattles) * 100) : 0;
+
+	function cellColor(stat: { wins: number; total: number } | null): string {
+		if (!stat) return "oklch(var(--b3))";
+		if (mode === "winrate") return winRateColor(stat.wins, stat.total);
+		return battlesColor(stat.total, maxDayBattles);
+	}
 
 	return (
 		<div className="flex flex-col gap-4">
 			<StatCard>
 				<SectionTitle
 					aside={
-						<div className="flex gap-4 text-xs text-base-content/60">
+						<div className="flex gap-4 text-xs text-base-content/60 items-center">
 							<span>{activeDays} dias ativos</span>
 							<span>{totalBattles} batalhas</span>
 							<span className={overallWR >= 50 ? "text-success font-semibold" : "text-error font-semibold"}>
@@ -124,8 +146,24 @@ export default function CalendarHeatmap({ data }: { data: CalendarStat | null })
 						</div>
 					}
 				>
-					Calendário de batalhas
+					Calendario de batalhas
 				</SectionTitle>
+
+				{/* Toggle */}
+				<div className="flex gap-1 mb-3">
+					<button
+						className={`btn btn-xs ${mode === "winrate" ? "btn-primary" : "btn-ghost"}`}
+						onClick={() => setMode("winrate")}
+					>
+						Win Rate
+					</button>
+					<button
+						className={`btn btn-xs ${mode === "battles" ? "btn-primary" : "btn-ghost"}`}
+						onClick={() => setMode("battles")}
+					>
+						Batalhas
+					</button>
+				</div>
 
 				<div className="overflow-x-auto pb-1">
 					<div style={{ display: "inline-block" }}>
@@ -170,10 +208,10 @@ export default function CalendarHeatmap({ data }: { data: CalendarStat | null })
 								<div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
 									{week.map((cell) => {
 										const empty = !cell.stat || cell.isFuture;
-										const bg = empty ? "oklch(var(--b3))" : winRateColor(cell.stat!.wins, cell.stat!.total);
+										const bg = empty ? "oklch(var(--b3))" : cellColor(cell.stat);
 										const wr = cell.stat ? Math.round((cell.stat.wins / cell.stat.total) * 100) : 0;
 										const title = cell.stat
-											? `${cell.key}: ${cell.stat.wins}W / ${cell.stat.total - cell.stat.wins}L (${wr}% WR)`
+											? `${cell.key}: ${cell.stat.total} batalhas — ${cell.stat.wins}W / ${cell.stat.total - cell.stat.wins}L (${wr}% WR)`
 											: cell.key;
 
 										return (
@@ -195,6 +233,7 @@ export default function CalendarHeatmap({ data }: { data: CalendarStat | null })
 							))}
 						</div>
 
+						{/* Legenda dinâmica */}
 						<div
 							style={{
 								display: "flex",
@@ -205,14 +244,29 @@ export default function CalendarHeatmap({ data }: { data: CalendarStat | null })
 								justifyContent: "flex-end",
 							}}
 						>
-							<span style={{ fontSize: 10, color: "oklch(var(--bc) / 0.5)" }}>0%</span>
-							{[0, 0.17, 0.33, 0.5, 0.67, 0.83, 1].map((v) => (
-								<div
-									key={v}
-									style={{ width: CELL, height: CELL, borderRadius: 2, background: winRateColor(v, 1) }}
-								/>
-							))}
-							<span style={{ fontSize: 10, color: "oklch(var(--bc) / 0.5)" }}>100%</span>
+							{mode === "winrate" ? (
+								<>
+									<span style={{ fontSize: 10, color: "oklch(var(--bc) / 0.5)" }}>0%</span>
+									{[0, 0.17, 0.33, 0.5, 0.67, 0.83, 1].map((v) => (
+										<div
+											key={v}
+											style={{ width: CELL, height: CELL, borderRadius: 2, background: winRateColor(v, 1) }}
+										/>
+									))}
+									<span style={{ fontSize: 10, color: "oklch(var(--bc) / 0.5)" }}>100%</span>
+								</>
+							) : (
+								<>
+									<span style={{ fontSize: 10, color: "oklch(var(--bc) / 0.5)" }}>1</span>
+									{[0.1, 0.25, 0.4, 0.55, 0.7, 0.85, 1].map((v) => (
+										<div
+											key={v}
+											style={{ width: CELL, height: CELL, borderRadius: 2, background: battlesColor(v * maxDayBattles, maxDayBattles) }}
+										/>
+									))}
+									<span style={{ fontSize: 10, color: "oklch(var(--bc) / 0.5)" }}>{maxDayBattles}</span>
+								</>
+							)}
 						</div>
 					</div>
 				</div>
