@@ -55,6 +55,8 @@ export default async function BattlelogPage({ params }: Props) {
 	try {
 		const isStats = currentTab === "stats";
 
+		const isOpponents = currentTab === "opponents";
+
 		const tabFetch =
 			currentTab === "history"
 				? get<ReplayPage>(
@@ -79,7 +81,7 @@ export default async function BattlelogPage({ params }: Props) {
 							`/v1/battlelog/${userId}/character-ranks`,
 						)
 					: Promise.resolve(null),
-				isStats
+				isStats || isOpponents
 					? get<CharacterOption[]>(
 							`/v1/battlelog/${userId}/characters`,
 						)
@@ -125,8 +127,9 @@ export default async function BattlelogPage({ params }: Props) {
 					// non-fatal
 				}
 			}
-		} else {
+		} else if (currentTab === "opponents") {
 			opponentsData = tabData as CharStat[];
+			lpCharacters = (charsData as CharacterOption[] | null) ?? [];
 		}
 	} catch (err) {
 		console.error("[page] fetch error:", err);

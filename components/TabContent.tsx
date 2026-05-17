@@ -63,6 +63,6 @@ export default function TabContent({
 			<CalendarHeatmap data={calendarData} />
 		</div>
 	);
-	if (tab === "opponents") return <OpponentChart data={opponentsData} />;
+	if (tab === "opponents") return <OpponentChart data={opponentsData} userId={userId} characters={lpCharacters} />;
 	return <HistoryList userId={userId} initialReplays={initialReplays} totalPages={totalPages} initialCharacters={historyCharacters} />;
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect, useCallback } from "react";
 import clsx from "clsx";
 import {
 	Bar,
@@ -10,7 +11,7 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import type { CharStat } from "../lib/types";
+import type { CharStat, CharacterOption } from "../lib/types";
 import StatCard from "./ui/StatCard";
 import SectionTitle from "./ui/SectionTitle";
 import StatRow from "./ui/StatRow";
@@ -65,7 +66,32 @@ function TrainingCard({ stat, rank }: { stat: CharStat; rank: number }) {
 	);
 }
 
-export default function OpponentChart({ data: stats }: { data: CharStat[] | null }) {
+interface Props {
+	data: CharStat[] | null;
+	userId: string;
+	characters: CharacterOption[];
+}
+
+export default function OpponentChart({ data: initialData, userId, characters }: Props) {
+	const [selected, setSelected] = useState("");
+	const [stats, setStats] = useState(initialData);
+	const [loading, setLoading] = useState(false);
+
+	const fetchOpponents = useCallback((character: string) => {
+		setLoading(true);
+		const q = character ? `?character=${character}` : "";
+		fetch(`${process.env.NEXT_PUBLIC_GO_API_URL}/v1/battlelog/${userId}/opponents${q}`)
+			.then((r) => r.json())
+			.then((d) => setStats(d))
+			.catch(() => {})
+			.finally(() => setLoading(false));
+	}, [userId]);
+
+	function handleChange(value: string) {
+		setSelected(value);
+		fetchOpponents(value);
+	}
+
 	if (!stats || stats.length === 0) return null;
 
 	const trainingTargets = [...stats]
@@ -74,6 +100,26 @@ export default function OpponentChart({ data: stats }: { data: CharStat[] | null
 
 	return (
 		<div className="flex flex-col gap-4">
+			{/* Character filter */}
+			{characters.length > 1 && (
+				<div className="flex items-center gap-2">
+					<span className="text-sm text-base-content/60">Jogando com:</span>
+					<select
+						className="select select-sm select-bordered"
+						value={selected}
+						onChange={(e) => handleChange(e.target.value)}
+					>
+						<option value="">Todos os personagens</option>
+						{characters.map((c) => (
+							<option key={c.tool_name} value={c.tool_name}>
+								{c.name}
+							</option>
+						))}
+					</select>
+					{loading && <span className="loading loading-spinner loading-xs" />}
+				</div>
+			)}
+
 			<StatCard>
 				<SectionTitle subtitle="Baseado na frequência de batalhas × taxa de derrota">
 					Personagens para treinar
@@ -105,7 +151,7 @@ export default function OpponentChart({ data: stats }: { data: CharStat[] | null
 								borderRadius: "0.5rem",
 								fontSize: "0.75rem",
 							}}
-							formatter={(_value, _name, props) => {
+							formatter={(_value: any, _name: any, props: any) => {
 								const s = props.payload as CharStat;
 								return [
 									`${s.total} batalhas  •  ${s.wins}W / ${s.losses}L  •  ${s.win_rate}% WR`,
