@@ -11,6 +11,7 @@ import type {
 	ReplayPage,
 	SF6Replay,
 	SF6FighterBannerInfo,
+	WeeklyHeatmap,
 	WinLossStat,
 } from "../../../../lib/types";
 
@@ -45,6 +46,7 @@ export default async function BattlelogPage({ params }: Props) {
 	let calendarData: CalendarStat | null = null;
 	let lpHistory: LPHistory | null = null;
 	let hourlyStats: HourlyStats | null = null;
+	let weeklyHeatmap: WeeklyHeatmap | null = null;
 	let historyCharacters: CharacterOption[] = [];
 	let lpCharacters: CharacterOption[] = [];
 	let characterRanks: CharacterRankStat[] | null = null;
@@ -62,7 +64,7 @@ export default async function BattlelogPage({ params }: Props) {
 					? get<WinLossStat>(`/v1/battlelog/${userId}/stats`)
 					: get<CharStat[]>(`/v1/battlelog/${userId}/opponents`);
 
-		const [profile, tabData, hourlyData, calData, ranksData, charsData] =
+		const [profile, tabData, hourlyData, calData, ranksData, charsData, weeklyData] =
 			await Promise.all([
 				get<SF6FighterBannerInfo>(`/v1/battlelog/${userId}/profile`),
 				tabFetch,
@@ -82,6 +84,9 @@ export default async function BattlelogPage({ params }: Props) {
 							`/v1/battlelog/${userId}/characters`,
 						)
 					: Promise.resolve(null),
+				isStats
+					? get<WeeklyHeatmap>(`/v1/battlelog/${userId}/weekly`)
+					: Promise.resolve(null),
 			]);
 
 		bannerInfo = profile;
@@ -100,6 +105,7 @@ export default async function BattlelogPage({ params }: Props) {
 		} else if (currentTab === "stats") {
 			statsData = tabData as WinLossStat;
 			hourlyStats = hourlyData as HourlyStats | null;
+			weeklyHeatmap = weeklyData as WeeklyHeatmap | null;
 			calendarData = calData as CalendarStat | null;
 			characterRanks = ranksData as CharacterRankStat[] | null;
 			lpCharacters = (charsData as CharacterOption[] | null) ?? [];
@@ -140,6 +146,7 @@ export default async function BattlelogPage({ params }: Props) {
 				calendarData={calendarData}
 				lpHistory={lpHistory}
 				hourlyStats={hourlyStats}
+				weeklyHeatmap={weeklyHeatmap}
 				historyCharacters={historyCharacters}
 				lpCharacters={lpCharacters}
 				defaultCharacter={defaultCharacter}

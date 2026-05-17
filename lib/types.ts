@@ -235,6 +235,10 @@ export interface HourlyStats {
 	hours: HourStat[];
 }
 
+export interface WeeklyHeatmap {
+	days: HourStat[][]; // 7 days × 24 hours
+}
+
 // ─── LP history ──────────────────────────────────────────────────────────────
 
 export interface LPEntry {

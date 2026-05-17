@@ -5,8 +5,9 @@ import HourlyHeatmap from "./HourlyHeatmap";
 import LPChart from "./LPChart";
 import OpponentChart from "./OpponentChart";
 import UserHeader from "./UserHeader";
+import WeeklyHeatmap from "./WeeklyHeatmap";
 import WinLossChart from "./WinLossChart";
-import type { CalendarStat, CharacterOption, CharacterRankStat, CharStat, HourlyStats, LPHistory, SF6FighterBannerInfo, SF6Replay, WinLossStat } from "../lib/types";
+import type { CalendarStat, CharacterOption, CharacterRankStat, CharStat, HourlyStats, LPHistory, SF6FighterBannerInfo, SF6Replay, WeeklyHeatmap as WeeklyHeatmapType, WinLossStat } from "../lib/types";
 
 const VALID_TABS = ["stats", "opponents", "history"] as const;
 type Tab = (typeof VALID_TABS)[number];
@@ -23,6 +24,7 @@ interface Props {
 	defaultCharacter: string;
 	characterRanks: CharacterRankStat[] | null;
 	hourlyStats: HourlyStats | null;
+	weeklyHeatmap: WeeklyHeatmapType | null;
 	initialReplays: SF6Replay[];
 	totalPages: number;
 	historyCharacters: CharacterOption[];
@@ -40,6 +42,7 @@ export default function TabContent({
 	defaultCharacter,
 	characterRanks,
 	hourlyStats,
+	weeklyHeatmap,
 	initialReplays,
 	totalPages,
 	historyCharacters,
@@ -56,6 +59,7 @@ export default function TabContent({
 				initialCharacters={lpCharacters}
 			/>
 			<HourlyHeatmap data={hourlyStats} />
+			<WeeklyHeatmap data={weeklyHeatmap} />
 			<CalendarHeatmap data={calendarData} />
 		</div>
 	);
