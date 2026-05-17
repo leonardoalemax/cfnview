@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import type { WeeklyHeatmap as WeeklyHeatmapData } from "../lib/types";
 import StatCard from "./ui/StatCard";
 import SectionTitle from "./ui/SectionTitle";
@@ -25,14 +24,11 @@ function battlesColor(total: number, maxBattles: number): string {
 	return `hsl(140, ${Math.round(s)}%, ${Math.round(l)}%)`;
 }
 
-export default function WeeklyHeatmap({ data }: { data: WeeklyHeatmapData | null }) {
-	const [mode, setMode] = useState<Mode>("winrate");
-
+export default function WeeklyHeatmap({ data, mode }: { data: WeeklyHeatmapData | null; mode: Mode }) {
 	if (!data) return null;
 
 	const days = data.days;
 
-	// Find max battles across all cells for battles mode scaling
 	let maxTotal = 0;
 	let bestDay = -1;
 	let bestHour = -1;
@@ -66,50 +62,23 @@ export default function WeeklyHeatmap({ data }: { data: WeeklyHeatmapData | null
 				Heatmap semanal
 			</SectionTitle>
 
-			<div className="flex gap-1 mb-3">
-				<button
-					className={`btn btn-xs ${mode === "winrate" ? "btn-primary" : "btn-ghost"}`}
-					onClick={() => setMode("winrate")}
-				>
-					Win Rate
-				</button>
-				<button
-					className={`btn btn-xs ${mode === "battles" ? "btn-primary" : "btn-ghost"}`}
-					onClick={() => setMode("battles")}
-				>
-					Batalhas
-				</button>
-			</div>
-
 			<div className="overflow-x-auto pb-1">
 				<div className="inline-flex gap-0.5" style={{ minWidth: 320 }}>
-					{/* Hour labels column */}
 					<div className="flex flex-col gap-0.5 pr-1">
-						{/* Header spacer */}
 						<div className="h-5" />
 						{Array.from({ length: 24 }, (_, h) => (
-							<div
-								key={h}
-								className="h-5 flex items-center justify-end"
-							>
-								<span className="text-[9px] text-base-content/40 leading-none">
-									{h}h
-								</span>
+							<div key={h} className="h-5 flex items-center justify-end">
+								<span className="text-[9px] text-base-content/40 leading-none">{h}h</span>
 							</div>
 						))}
 					</div>
 
-					{/* Day columns */}
 					{days.map((hourStats, dayIdx) => (
 						<div key={dayIdx} className="flex flex-col gap-0.5 flex-1" style={{ minWidth: 36 }}>
-							{/* Day header */}
 							<div className="h-5 flex items-center justify-center">
-								<span className="text-[10px] text-base-content/50 font-medium">
-									{DAY_LABELS[dayIdx]}
-								</span>
+								<span className="text-[10px] text-base-content/50 font-medium">{DAY_LABELS[dayIdx]}</span>
 							</div>
 
-							{/* 24 hour cells */}
 							{hourStats.map((stat) => {
 								const hasData = stat.total > 0;
 								const wr = hasData ? Math.round((stat.wins / stat.total) * 100) : 0;
@@ -130,13 +99,9 @@ export default function WeeklyHeatmap({ data }: { data: WeeklyHeatmapData | null
 											outlineOffset: isBest ? "-1px" : undefined,
 										}}
 									>
-										{!hasData && (
-											<div className="absolute inset-0 rounded-sm bg-base-300/50" />
-										)}
+										{!hasData && <div className="absolute inset-0 rounded-sm bg-base-300/50" />}
 										{isBest && (
-											<span className="absolute -top-1 -right-1 text-[8px] leading-none z-10" title="Melhor momento para jogar!">
-												&#11088;
-											</span>
+											<span className="absolute -top-1 -right-1 text-[8px] leading-none z-10" title="Melhor momento para jogar!">&#11088;</span>
 										)}
 										{hasData && (
 											<span className="text-[9px] font-bold leading-none text-white/90">
@@ -151,17 +116,12 @@ export default function WeeklyHeatmap({ data }: { data: WeeklyHeatmapData | null
 				</div>
 			</div>
 
-			{/* Legend */}
 			<div className="flex items-center gap-1 mt-3 justify-end">
 				{mode === "winrate" ? (
 					<>
 						<span className="text-[10px] text-base-content/50">0%</span>
 						{[0, 0.17, 0.33, 0.5, 0.67, 0.83, 1].map((v) => (
-							<div
-								key={v}
-								className="w-3 h-3 rounded-sm"
-								style={{ background: winRateColor(v, 1) }}
-							/>
+							<div key={v} className="w-3 h-3 rounded-sm" style={{ background: winRateColor(v, 1) }} />
 						))}
 						<span className="text-[10px] text-base-content/50">100%</span>
 					</>
@@ -169,11 +129,7 @@ export default function WeeklyHeatmap({ data }: { data: WeeklyHeatmapData | null
 					<>
 						<span className="text-[10px] text-base-content/50">1</span>
 						{[0.1, 0.25, 0.4, 0.55, 0.7, 0.85, 1].map((v) => (
-							<div
-								key={v}
-								className="w-3 h-3 rounded-sm"
-								style={{ background: battlesColor(v * maxTotal, maxTotal) }}
-							/>
+							<div key={v} className="w-3 h-3 rounded-sm" style={{ background: battlesColor(v * maxTotal, maxTotal) }} />
 						))}
 						<span className="text-[10px] text-base-content/50">{maxTotal}</span>
 					</>

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import type { CalendarStat } from "../lib/types";
 import StatCard from "./ui/StatCard";
 import SectionTitle from "./ui/SectionTitle";
@@ -67,52 +66,7 @@ function buildWeeks(byDay: CalendarStat["by_day"]) {
 	return { weeks, monthLabels };
 }
 
-function WeekdayChart({ byWeekday }: { byWeekday: CalendarStat["by_weekday"] }) {
-	return (
-		<StatCard bodyClassName="gap-3">
-			<SectionTitle>Win rate por dia da semana</SectionTitle>
-			<div className="flex flex-col gap-2">
-				{byWeekday.map((stat, i) => {
-					const wr = stat.total > 0 ? Math.round((stat.wins / stat.total) * 100) : null;
-					return (
-						<div key={i} className="flex items-center gap-2">
-							<span className="w-7 text-[11px] text-right text-base-content/50 shrink-0">
-								{DAY_LABELS[i]}
-							</span>
-							<div className="flex-1 h-[18px] rounded bg-base-300 overflow-hidden">
-								{wr !== null && (
-									<div
-										className="h-full rounded transition-all duration-300"
-										style={{ width: `${wr}%`, background: winRateColor(stat.wins, stat.total) }}
-									/>
-								)}
-							</div>
-							<div className="w-[90px] text-[11px] shrink-0 flex gap-1.5 justify-end">
-								{wr !== null ? (
-									<>
-										<span className="text-base-content/40">{stat.total}j</span>
-										<span
-											className="font-semibold"
-											style={{ color: wr >= 50 ? "hsl(120,55%,45%)" : "hsl(0,65%,50%)" }}
-										>
-											{wr}%
-										</span>
-									</>
-								) : (
-									<span className="text-base-content/30">—</span>
-								)}
-							</div>
-						</div>
-					);
-				})}
-			</div>
-		</StatCard>
-	);
-}
-
-export default function CalendarHeatmap({ data }: { data: CalendarStat | null }) {
-	const [mode, setMode] = useState<Mode>("winrate");
-
+export default function CalendarHeatmap({ data, mode }: { data: CalendarStat | null; mode: Mode }) {
 	if (!data) return null;
 
 	const { weeks, monthLabels } = buildWeeks(data.by_day);
@@ -133,146 +87,119 @@ export default function CalendarHeatmap({ data }: { data: CalendarStat | null })
 	}
 
 	return (
-		<div className="flex flex-col gap-4">
-			<StatCard>
-				<SectionTitle
-					aside={
-						<div className="flex gap-4 text-xs text-base-content/60 items-center">
-							<span>{activeDays} dias ativos</span>
-							<span>{totalBattles} batalhas</span>
-							<span className={overallWR >= 50 ? "text-success font-semibold" : "text-error font-semibold"}>
-								{overallWR}% WR geral
+		<StatCard>
+			<SectionTitle
+				aside={
+					<div className="flex gap-4 text-xs text-base-content/60 items-center">
+						<span>{activeDays} dias ativos</span>
+						<span>{totalBattles} batalhas</span>
+						<span className={overallWR >= 50 ? "text-success font-semibold" : "text-error font-semibold"}>
+							{overallWR}% WR geral
+						</span>
+					</div>
+				}
+			>
+				Calendario de batalhas
+			</SectionTitle>
+
+			<div className="overflow-x-auto pb-1">
+				<div style={{ display: "inline-block" }}>
+					<div style={{ display: "flex", marginLeft: DAY_COL_W + GAP, height: 18, position: "relative" }}>
+						{monthLabels.map(({ label, col }) => (
+							<span
+								key={col}
+								style={{
+									position: "absolute",
+									left: col * STEP,
+									fontSize: 11,
+									lineHeight: "18px",
+									color: "oklch(var(--bc) / 0.5)",
+									whiteSpace: "nowrap",
+								}}
+							>
+								{label}
 							</span>
-						</div>
-					}
-				>
-					Calendario de batalhas
-				</SectionTitle>
+						))}
+					</div>
 
-				{/* Toggle */}
-				<div className="flex gap-1 mb-3">
-					<button
-						className={`btn btn-xs ${mode === "winrate" ? "btn-primary" : "btn-ghost"}`}
-						onClick={() => setMode("winrate")}
-					>
-						Win Rate
-					</button>
-					<button
-						className={`btn btn-xs ${mode === "battles" ? "btn-primary" : "btn-ghost"}`}
-						onClick={() => setMode("battles")}
-					>
-						Batalhas
-					</button>
-				</div>
-
-				<div className="overflow-x-auto pb-1">
-					<div style={{ display: "inline-block" }}>
-						<div style={{ display: "flex", marginLeft: DAY_COL_W + GAP, height: 18, position: "relative" }}>
-							{monthLabels.map(({ label, col }) => (
-								<span
-									key={col}
+					<div style={{ display: "flex", gap: GAP }}>
+						<div style={{ display: "flex", flexDirection: "column", gap: GAP, width: DAY_COL_W }}>
+							{DAY_LABELS.map((label, i) => (
+								<div
+									key={i}
 									style={{
-										position: "absolute",
-										left: col * STEP,
-										fontSize: 11,
-										lineHeight: "18px",
-										color: "oklch(var(--bc) / 0.5)",
-										whiteSpace: "nowrap",
+										height: CELL,
+										fontSize: 10,
+										lineHeight: `${CELL}px`,
+										textAlign: "right",
+										paddingRight: 4,
+										color: "oklch(var(--bc) / 0.4)",
 									}}
 								>
-									{label}
-								</span>
-							))}
-						</div>
-
-						<div style={{ display: "flex", gap: GAP }}>
-							<div style={{ display: "flex", flexDirection: "column", gap: GAP, width: DAY_COL_W }}>
-								{DAY_LABELS.map((label, i) => (
-									<div
-										key={i}
-										style={{
-											height: CELL,
-											fontSize: 10,
-											lineHeight: `${CELL}px`,
-											textAlign: "right",
-											paddingRight: 4,
-											color: "oklch(var(--bc) / 0.4)",
-										}}
-									>
-										{i % 2 === 1 ? label : ""}
-									</div>
-								))}
-							</div>
-
-							{weeks.map((week, wi) => (
-								<div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
-									{week.map((cell) => {
-										const empty = !cell.stat || cell.isFuture;
-										const bg = empty ? "oklch(var(--b3))" : cellColor(cell.stat);
-										const wr = cell.stat ? Math.round((cell.stat.wins / cell.stat.total) * 100) : 0;
-										const title = cell.stat
-											? `${cell.key}: ${cell.stat.total} batalhas — ${cell.stat.wins}W / ${cell.stat.total - cell.stat.wins}L (${wr}% WR)`
-											: cell.key;
-
-										return (
-											<div
-												key={cell.key}
-												title={title}
-												style={{
-													width: CELL,
-													height: CELL,
-													background: bg,
-													borderRadius: 2,
-													opacity: cell.isFuture ? 0.15 : 1,
-													cursor: cell.stat ? "default" : undefined,
-												}}
-											/>
-										);
-									})}
+									{i % 2 === 1 ? label : ""}
 								</div>
 							))}
 						</div>
 
-						{/* Legenda dinâmica */}
-						<div
-							style={{
-								display: "flex",
-								alignItems: "center",
-								gap: 4,
-								marginTop: 8,
-								marginLeft: DAY_COL_W + GAP,
-								justifyContent: "flex-end",
-							}}
-						>
-							{mode === "winrate" ? (
-								<>
-									<span style={{ fontSize: 10, color: "oklch(var(--bc) / 0.5)" }}>0%</span>
-									{[0, 0.17, 0.33, 0.5, 0.67, 0.83, 1].map((v) => (
+						{weeks.map((week, wi) => (
+							<div key={wi} style={{ display: "flex", flexDirection: "column", gap: GAP }}>
+								{week.map((cell) => {
+									const empty = !cell.stat || cell.isFuture;
+									const bg = empty ? "oklch(var(--b3))" : cellColor(cell.stat);
+									const wr = cell.stat ? Math.round((cell.stat.wins / cell.stat.total) * 100) : 0;
+									const title = cell.stat
+										? `${cell.key}: ${cell.stat.total} batalhas — ${cell.stat.wins}W / ${cell.stat.total - cell.stat.wins}L (${wr}% WR)`
+										: cell.key;
+
+									return (
 										<div
-											key={v}
-											style={{ width: CELL, height: CELL, borderRadius: 2, background: winRateColor(v, 1) }}
+											key={cell.key}
+											title={title}
+											style={{
+												width: CELL,
+												height: CELL,
+												background: bg,
+												borderRadius: 2,
+												opacity: cell.isFuture ? 0.15 : 1,
+												cursor: cell.stat ? "default" : undefined,
+											}}
 										/>
-									))}
-									<span style={{ fontSize: 10, color: "oklch(var(--bc) / 0.5)" }}>100%</span>
-								</>
-							) : (
-								<>
-									<span style={{ fontSize: 10, color: "oklch(var(--bc) / 0.5)" }}>1</span>
-									{[0.1, 0.25, 0.4, 0.55, 0.7, 0.85, 1].map((v) => (
-										<div
-											key={v}
-											style={{ width: CELL, height: CELL, borderRadius: 2, background: battlesColor(v * maxDayBattles, maxDayBattles) }}
-										/>
-									))}
-									<span style={{ fontSize: 10, color: "oklch(var(--bc) / 0.5)" }}>{maxDayBattles}</span>
-								</>
-							)}
-						</div>
+									);
+								})}
+							</div>
+						))}
+					</div>
+
+					<div
+						style={{
+							display: "flex",
+							alignItems: "center",
+							gap: 4,
+							marginTop: 8,
+							marginLeft: DAY_COL_W + GAP,
+							justifyContent: "flex-end",
+						}}
+					>
+						{mode === "winrate" ? (
+							<>
+								<span style={{ fontSize: 10, color: "oklch(var(--bc) / 0.5)" }}>0%</span>
+								{[0, 0.17, 0.33, 0.5, 0.67, 0.83, 1].map((v) => (
+									<div key={v} style={{ width: CELL, height: CELL, borderRadius: 2, background: winRateColor(v, 1) }} />
+								))}
+								<span style={{ fontSize: 10, color: "oklch(var(--bc) / 0.5)" }}>100%</span>
+							</>
+						) : (
+							<>
+								<span style={{ fontSize: 10, color: "oklch(var(--bc) / 0.5)" }}>1</span>
+								{[0.1, 0.25, 0.4, 0.55, 0.7, 0.85, 1].map((v) => (
+									<div key={v} style={{ width: CELL, height: CELL, borderRadius: 2, background: battlesColor(v * maxDayBattles, maxDayBattles) }} />
+								))}
+								<span style={{ fontSize: 10, color: "oklch(var(--bc) / 0.5)" }}>{maxDayBattles}</span>
+							</>
+						)}
 					</div>
 				</div>
-			</StatCard>
-
-			<WeekdayChart byWeekday={data.by_weekday} />
-		</div>
+			</div>
+		</StatCard>
 	);
 }

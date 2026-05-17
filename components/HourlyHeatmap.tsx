@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import type { HourlyStats } from "../lib/types";
 import StatCard from "./ui/StatCard";
 import SectionTitle from "./ui/SectionTitle";
@@ -28,9 +27,7 @@ function bestHourScore(wins: number, total: number): number {
 	return (wins / total) * Math.log2(1 + total);
 }
 
-export default function HourlyHeatmap({ data }: { data: HourlyStats | null }) {
-	const [mode, setMode] = useState<Mode>("winrate");
-
+export default function HourlyHeatmap({ data, mode }: { data: HourlyStats | null; mode: Mode }) {
 	if (!data) return null;
 
 	const hours = data.hours;
@@ -38,7 +35,6 @@ export default function HourlyHeatmap({ data }: { data: HourlyStats | null }) {
 	const am = hours.slice(0, 12);
 	const pm = hours.slice(12, 24);
 
-	// Find best hour (weighted win rate)
 	let bestHour = -1;
 	let bestScore = 0;
 	for (const h of hours) {
@@ -117,37 +113,17 @@ export default function HourlyHeatmap({ data }: { data: HourlyStats | null }) {
 				Heatmap por hora
 			</SectionTitle>
 
-			<div className="flex gap-1 mb-3">
-				<button
-					className={`btn btn-xs ${mode === "winrate" ? "btn-primary" : "btn-ghost"}`}
-					onClick={() => setMode("winrate")}
-				>
-					Win Rate
-				</button>
-				<button
-					className={`btn btn-xs ${mode === "battles" ? "btn-primary" : "btn-ghost"}`}
-					onClick={() => setMode("battles")}
-				>
-					Batalhas
-				</button>
-			</div>
-
 			<div className="flex flex-col gap-3">
 				{renderRow(am, "Manha")}
 				{renderRow(pm, "Tarde / Noite")}
 			</div>
 
-			{/* Legenda */}
 			<div className="flex items-center gap-1 mt-3 justify-end">
 				{mode === "winrate" ? (
 					<>
 						<span className="text-[10px] text-base-content/50">0%</span>
 						{[0, 0.17, 0.33, 0.5, 0.67, 0.83, 1].map((v) => (
-							<div
-								key={v}
-								className="w-3 h-3 rounded-sm"
-								style={{ background: winRateColor(v, 1) }}
-							/>
+							<div key={v} className="w-3 h-3 rounded-sm" style={{ background: winRateColor(v, 1) }} />
 						))}
 						<span className="text-[10px] text-base-content/50">100%</span>
 					</>
@@ -155,11 +131,7 @@ export default function HourlyHeatmap({ data }: { data: HourlyStats | null }) {
 					<>
 						<span className="text-[10px] text-base-content/50">1</span>
 						{[0.1, 0.25, 0.4, 0.55, 0.7, 0.85, 1].map((v) => (
-							<div
-								key={v}
-								className="w-3 h-3 rounded-sm"
-								style={{ background: battlesColor(v * maxTotal, maxTotal) }}
-							/>
+							<div key={v} className="w-3 h-3 rounded-sm" style={{ background: battlesColor(v * maxTotal, maxTotal) }} />
 						))}
 						<span className="text-[10px] text-base-content/50">{maxTotal}</span>
 					</>

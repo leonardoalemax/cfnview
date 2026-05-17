@@ -1,11 +1,9 @@
-import CalendarHeatmap from "./CalendarHeatmap";
 import CharacterRanks from "./CharacterRanks";
+import HeatmapGrid from "./HeatmapGrid";
 import HistoryList from "./HistoryList";
-import HourlyHeatmap from "./HourlyHeatmap";
 import LPChart from "./LPChart";
 import OpponentChart from "./OpponentChart";
 import UserHeader from "./UserHeader";
-import WeeklyHeatmap from "./WeeklyHeatmap";
 import WinLossChart from "./WinLossChart";
 import type { CalendarStat, CharacterOption, CharacterRankStat, CharStat, HourlyStats, LPHistory, SF6FighterBannerInfo, SF6Replay, WeeklyHeatmap as WeeklyHeatmapType, WinLossStat } from "../lib/types";
 
@@ -58,9 +56,11 @@ export default function TabContent({
 				initialData={lpHistory}
 				initialCharacters={lpCharacters}
 			/>
-			<HourlyHeatmap data={hourlyStats} />
-			<WeeklyHeatmap data={weeklyHeatmap} />
-			<CalendarHeatmap data={calendarData} />
+			<HeatmapGrid
+				hourlyStats={hourlyStats}
+				weeklyHeatmap={weeklyHeatmap}
+				calendarData={calendarData}
+			/>
 		</div>
 	);
 	if (tab === "opponents") return <OpponentChart data={opponentsData} userId={userId} characters={lpCharacters} />;

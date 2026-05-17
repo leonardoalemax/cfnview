@@ -12,11 +12,10 @@ import {
 	YAxis,
 } from "recharts";
 import type { CharStat, CharacterOption, TrainingSuggestion } from "../lib/types";
+import CharacterIcon from "./ui/CharacterIcon";
 import StatCard from "./ui/StatCard";
 import SectionTitle from "./ui/SectionTitle";
 import StatRow from "./ui/StatRow";
-
-const SF6_BASE = "https://www.streetfighter.com/6/buckler/assets/images";
 const MEDALS = ["🥇", "🥈", "🥉"];
 
 function TrainingCard({ stat, rank }: { stat: TrainingSuggestion; rank: number }) {
@@ -27,13 +26,7 @@ function TrainingCard({ stat, rank }: { stat: TrainingSuggestion; rank: number }
 			<div className="card-body p-3 gap-2 items-center text-center">
 				<span className="text-2xl">{MEDALS[rank]}</span>
 
-				<div className="relative w-20 h-20">
-					<img
-						src={`${SF6_BASE}/material/character/character_${stat.tool_name}_l.png`}
-						alt={stat.name}
-						className="w-full h-full object-contain"
-					/>
-				</div>
+				<CharacterIcon toolName={stat.tool_name} className="w-20 h-20" />
 
 				<p className="font-bold text-sm">{stat.name}</p>
 
@@ -229,11 +222,7 @@ export default function OpponentChart({ data: initialData, userId, characters }:
 									<td className="text-base-content/40 font-mono">{i + 1}</td>
 									<td>
 										<div className="flex items-center gap-2">
-											<img
-												src={`${SF6_BASE}/material/character/character_${s.tool_name}_l.png`}
-												alt={s.name}
-												className="w-8 h-8 object-contain"
-											/>
+											<CharacterIcon toolName={s.tool_name} className="w-8 h-8" />
 											<span className="font-medium">{s.name}</span>
 										</div>
 									</td>
