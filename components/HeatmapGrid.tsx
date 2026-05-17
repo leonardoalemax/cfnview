@@ -16,7 +16,7 @@ interface Props {
 }
 
 export default function HeatmapGrid({ hourlyStats, weeklyHeatmap, calendarData }: Props) {
-	const [mode, setMode] = useState<Mode>("winrate");
+	const [mode, setMode] = useState<Mode>("battles");
 
 	const hasAny = hourlyStats || weeklyHeatmap || calendarData;
 	if (!hasAny) return null;
@@ -39,12 +39,14 @@ export default function HeatmapGrid({ hourlyStats, weeklyHeatmap, calendarData }
 				</button>
 			</div>
 
-			{/* 2×2 grid on desktop, stack on mobile */}
+			{/* Two columns on desktop: left stacks 3 short panels, right has the tall weekly */}
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-				<HourlyHeatmap data={hourlyStats} mode={mode} />
+				<div className="flex flex-col gap-4">
+					<HourlyHeatmap data={hourlyStats} mode={mode} />
+					<CalendarHeatmap data={calendarData} mode={mode} />
+					<WeekdayChart data={calendarData} mode={mode} />
+				</div>
 				<WeeklyHeatmap data={weeklyHeatmap} mode={mode} />
-				<CalendarHeatmap data={calendarData} mode={mode} />
-				<WeekdayChart data={calendarData} mode={mode} />
 			</div>
 		</div>
 	);

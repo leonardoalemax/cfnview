@@ -5,13 +5,13 @@ import styles from "./BattleCard.module.scss";
 import {
 	SF6Replay,
 	SF6PlayerInfo,
-	characterImg,
 	controlImg,
 	getWinner,
 	platformImg,
 	rankImg,
 	VS_IMG,
 } from "../lib/types";
+import CharacterIcon from "./ui/CharacterIcon";
 
 const SF6_BASE = "https://www.streetfighter.com/6/buckler/assets/images";
 
@@ -58,7 +58,10 @@ function CardHeader({
 					</span>
 				</div>
 				<span
-					className={clsx("badge badge-sm font-bold px-3 py-3 text-white", p1wins ? "badge-error" : "badge-success")}>
+					className={clsx(
+						"badge badge-sm font-bold px-3 py-3 text-white",
+						p1wins ? "badge-error" : "badge-success",
+					)}>
 					{replay.replay_battle_type_name}
 				</span>
 			</div>
@@ -141,7 +144,10 @@ function PlayerSide({
 				/>
 			</div>
 			<div
-				className={clsx("flex items-center gap-2", isRight && "flex-row-reverse")}>
+				className={clsx(
+					"flex items-center gap-2",
+					isRight && "flex-row-reverse",
+				)}>
 				<span className='text-sm font-bold whitespace-nowrap'>
 					{info.league_point.toLocaleString("pt-BR")} LP
 				</span>
@@ -152,7 +158,10 @@ function PlayerSide({
 	const nameRow = (
 		<Link
 			href={`/battlelog/${info.player.short_id}/stats`}
-			className={clsx("flex items-center gap-1 text-sm font-semibold min-w-0 hover:text-primary transition-colors", isRight && "flex-row-reverse")}>
+			className={clsx(
+				"flex items-center gap-1 text-sm font-semibold min-w-0 hover:text-primary transition-colors",
+				isRight && "flex-row-reverse",
+			)}>
 			<Image
 				src={controlImg(info.battle_input_type)}
 				alt=''
@@ -177,37 +186,46 @@ function PlayerSide({
 
 	const portrait = (
 		<div
-			className={clsx("relative shrink-0", !isWinner && "opacity-40 grayscale")}>
-			<Image
-				src={characterImg(info.playing_character_tool_name, charSide)}
-				alt={info.playing_character_name}
-				width={compact ? 64 : 128}
-				height={compact ? 64 : 128}
-				className='object-contain object-bottom'
-				unoptimized
+			className={clsx(
+				"relative shrink-0",
+				!isWinner && "opacity-40 grayscale",
+			)}>
+			<CharacterIcon
+				toolName={info.playing_character_tool_name}
+				side={charSide}
+				className='sm:w-36 sm:h-36 w-16 h-16 object-bottom'
 			/>
 		</div>
 	);
 
 	const resultLabel = (
 		<span
-			className={clsx("text-base font-black tracking-widest", isWinner ? "text-success" : "text-base-content/40")}>
+			className={clsx(
+				"text-base font-black tracking-widest",
+				isWinner ? "text-success" : "text-base-content/40",
+			)}>
 			{isWinner ? "WINS" : "LOSES"}
 		</span>
 	);
 
 	return (
 		<div
-			className={clsx("flex items-center gap-3 flex-1 min-w-0", isRight && "flex-row-reverse")}>
+			className={clsx(
+				"flex items-center gap-3 flex-1 min-w-0",
+				isRight && "flex-row-reverse",
+			)}>
 			{/* Info column */}
 			<div
-				className={clsx("flex flex-col gap-1.5 min-w-0 flex-1", isRight ? "items-end" : "items-start")}>
+				className={clsx(
+					"flex flex-col gap-1.5 min-w-0 flex-1",
+					isRight ? "items-end" : "items-start",
+				)}>
 				{nameRow}
 				{rankRow}
 			</div>
 
 			{/* Portrait + result */}
-			<div className="flex flex-col items-center gap-1">
+			<div className='flex flex-col items-center gap-1'>
 				{portrait}
 				{resultLabel}
 			</div>

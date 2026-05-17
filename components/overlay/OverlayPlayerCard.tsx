@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { characterImg, rankImg, type CachedBattlelog } from "../../lib/types";
+import { rankImg, type CachedBattlelog } from "../../lib/types";
 
 interface Props {
 	data: CachedBattlelog;

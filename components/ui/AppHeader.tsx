@@ -4,8 +4,7 @@ import clsx from "clsx";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-
-const SF6_BASE = "https://www.streetfighter.com/6/buckler/assets/images";
+import CharacterIcon from "./CharacterIcon";
 const API_BASE = process.env.NEXT_PUBLIC_GO_API_URL ?? "";
 
 interface Profile {
@@ -68,7 +67,8 @@ export default function AppHeader() {
 				if (data) {
 					setProfile({
 						name: data.personal_info?.fighter_id ?? id,
-						characterToolName: data.favorite_character_tool_name ?? "",
+						characterToolName:
+							data.favorite_character_tool_name ?? "",
 					});
 				}
 			})
@@ -86,9 +86,7 @@ export default function AppHeader() {
 		setProfile(null);
 	}
 
-	const avatarSrc = profile?.characterToolName
-		? `${SF6_BASE}/material/character/character_${profile.characterToolName}_l.png`
-		: null;
+	const hasAvatar = !!profile?.characterToolName;
 
 	const isDados =
 		pathname.startsWith("/dados") ||
@@ -103,9 +101,12 @@ export default function AppHeader() {
 	const profileLinks = userId
 		? [
 				{ href: `/battlelog/${userId}/stats`, label: "Stats" },
-				{ href: `/battlelog/${userId}/opponents`, label: "Adversários" },
+				{
+					href: `/battlelog/${userId}/opponents`,
+					label: "Adversários",
+				},
 				{ href: `/battlelog/${userId}/history`, label: "Histórico" },
-		  ]
+			]
 		: [];
 
 	return (
@@ -140,10 +141,10 @@ export default function AppHeader() {
 							tabIndex={0}
 							role='button'
 							className={clsx(
-								"btn btn-sm sf6-panel",
+								"btn btn-sm",
 								isDados ? "active" : "disabled",
 							)}>
-							Dados
+							Dados Globais
 						</div>
 						<ul
 							tabIndex={0}
@@ -165,7 +166,7 @@ export default function AppHeader() {
 								tabIndex={0}
 								role='button'
 								className={clsx(
-									"btn btn-sm sf6-panel",
+									"btn btn-sm",
 									isStats ? "active" : "disabled",
 								)}>
 								Profile
@@ -175,7 +176,9 @@ export default function AppHeader() {
 								className='dropdown-content menu bg-base-100 rounded-box shadow z-50 w-44 mt-2'>
 								{profileLinks.map((l) => (
 									<li key={l.href}>
-										<Link href={l.href} onClick={blurActive}>
+										<Link
+											href={l.href}
+											onClick={blurActive}>
 											{l.label}
 										</Link>
 									</li>
@@ -203,15 +206,16 @@ export default function AppHeader() {
 								tabIndex={0}
 								role='button'
 								className='btn btn-ghost btn-sm gap-2 max-w-48'>
-								{avatarSrc ? (
-									<img
-										src={avatarSrc}
-										alt={profile?.characterToolName}
-										className='w-7 h-7 object-contain rounded-full bg-base-300'
+								{hasAvatar ? (
+									<CharacterIcon
+										toolName={profile!.characterToolName}
+										className='w-6 h-6 object-bottom'
 									/>
 								) : (
 									<div className='w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold'>
-										{(profile?.name ?? userId).charAt(0).toUpperCase()}
+										{(profile?.name ?? userId)
+											.charAt(0)
+											.toUpperCase()}
 									</div>
 								)}
 								<span className='max-w-28 truncate text-sm hidden sm:inline'>
@@ -229,7 +233,9 @@ export default function AppHeader() {
 									</Link>
 								</li>
 								<li>
-									<button onClick={logout} className='text-error'>
+									<button
+										onClick={logout}
+										className='text-error'>
 										Sair
 									</button>
 								</li>

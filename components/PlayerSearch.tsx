@@ -3,8 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { PlayerEntry } from "../lib/types";
-
-const SF6_BASE = "https://www.streetfighter.com/6/buckler/assets/images";
+import CharacterIcon from "./ui/CharacterIcon";
 
 function useDebounce<T>(value: T, delay: number): T {
 	const [debounced, setDebounced] = useState(value);
@@ -105,11 +104,7 @@ export default function PlayerSearch() {
 								onClick={() => select(p)}
 							>
 								{p.favorite_character_tool_name && (
-									<img
-										src={`${SF6_BASE}/material/character/character_${p.favorite_character_tool_name}_l.png`}
-										alt={p.favorite_character_tool_name}
-										className="w-8 h-8 object-contain shrink-0"
-									/>
+									<CharacterIcon toolName={p.favorite_character_tool_name} className="w-8 h-8 shrink-0" />
 								)}
 								<div className="flex flex-col min-w-0">
 									<span className="font-semibold truncate">{p.fighter_id}</span>

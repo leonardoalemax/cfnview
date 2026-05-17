@@ -20,7 +20,7 @@ export default function WinLossChart({ data }: { data: WinLossStat | null }) {
 	const COLORS = ["#36d399", "#f87272"];
 
 	return (
-		<StatCard className="mb-6" bodyClassName="gap-3">
+		<StatCard bodyClassName="gap-3">
 			<SectionTitle>Win Rate</SectionTitle>
 
 			<div className="flex items-center gap-6">

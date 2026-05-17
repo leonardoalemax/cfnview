@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { characterImg, platformImg, rankImg } from "../lib/types";
+import { platformImg, rankImg } from "../lib/types";
+import CharacterIcon from "./ui/CharacterIcon";
 import type { SF6FighterBannerInfo } from "../lib/types";
 import StatCard from "./ui/StatCard";
 import KudosPie from "./KudosPie";
@@ -38,18 +39,9 @@ export default function UserHeader({ info }: { info: SF6FighterBannerInfo }) {
 				<h2>Ultimo boneco usado</h2>
 				<div className='flex flex-row gap-4'>
 					<div className='flex flex-col sm:flex-row gap-4 items-start'>
-						<div className='sf6-panel relative sm:w-24 sm:h-24 w-16 h-16 shrink-0 mx-auto sm:mx-0'>
-							<Image
-								src={characterImg(
-									info.favorite_character_tool_name,
-									"l",
-								)}
-								alt={info.favorite_character_name}
-								fill
-								className='object-contain'
-								unoptimized
-							/>
-						</div>
+						<CharacterIcon
+							toolName={info.favorite_character_tool_name}
+						/>
 					</div>
 					<div className='flex flex-col min-h-full w-full gap-4 justify-between items-start'>
 						<p className='font-bold sm:text-xl text-sm tracking-wider'>

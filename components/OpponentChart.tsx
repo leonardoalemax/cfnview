@@ -2,15 +2,6 @@
 
 import { useState, useCallback } from "react";
 import clsx from "clsx";
-import {
-	Bar,
-	BarChart,
-	Cell,
-	ResponsiveContainer,
-	Tooltip,
-	XAxis,
-	YAxis,
-} from "recharts";
 import type { CharStat, CharacterOption, TrainingSuggestion } from "../lib/types";
 import CharacterIcon from "./ui/CharacterIcon";
 import StatCard from "./ui/StatCard";
@@ -166,43 +157,6 @@ export default function OpponentChart({ data: initialData, userId, characters }:
 
 			<StatCard>
 				<SectionTitle>Adversarios mais enfrentados</SectionTitle>
-
-				<ResponsiveContainer width="100%" height={Math.max(180, stats.length * 32)}>
-					<BarChart
-						data={stats}
-						layout="vertical"
-						margin={{ top: 0, right: 48, left: 8, bottom: 0 }}
-						barSize={16}
-					>
-						<XAxis type="number" hide />
-						<YAxis type="category" dataKey="name" width={80} tick={{ fontSize: 12 }} />
-						<Tooltip
-							cursor={{ fill: "oklch(var(--b3))" }}
-							contentStyle={{
-								background: "oklch(var(--b2))",
-								border: "1px solid oklch(var(--b3))",
-								borderRadius: "0.5rem",
-								fontSize: "0.75rem",
-							}}
-							formatter={(_value: any, _name: any, props: any) => {
-								const s = props.payload as CharStat;
-								return [
-									`${s.total} batalhas  •  ${s.wins}W / ${s.losses}L  •  ${s.win_rate}% WR`,
-									s.name,
-								];
-							}}
-						/>
-						<Bar dataKey="total" radius={[0, 4, 4, 0]}>
-							{stats.map((s) => (
-								<Cell
-									key={s.tool_name}
-									fill={s.win_rate >= 50 ? "oklch(var(--su))" : "oklch(var(--er))"}
-									fillOpacity={0.75}
-								/>
-							))}
-						</Bar>
-					</BarChart>
-				</ResponsiveContainer>
 
 				<div className="overflow-x-auto">
 					<table className="table table-xs w-full">

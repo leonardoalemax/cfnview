@@ -87,13 +87,13 @@ export default function HourlyHeatmap({ data, mode }: { data: HourlyStats | null
 									</span>
 								)}
 								<span
-									className="text-[10px] leading-none"
+									className="text-[8px] leading-none"
 									style={{ color: hasData ? "rgba(255,255,255,0.6)" : "oklch(var(--bc) / 0.25)" }}
 								>
 									{stat.hour}h
 								</span>
 								{hasData && (
-									<span className="text-xs font-bold leading-none mt-0.5 text-white">
+									<span className="text-[8px] font-bold leading-none mt-0.5 text-white">
 										{mode === "winrate" ? `${wr}%` : stat.total}
 									</span>
 								)}
