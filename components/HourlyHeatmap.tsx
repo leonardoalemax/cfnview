@@ -23,6 +23,11 @@ function battlesColor(total: number, maxBattles: number): string {
 	return `hsl(140, ${Math.round(s)}%, ${Math.round(l)}%)`;
 }
 
+function bestHourScore(wins: number, total: number): number {
+	if (total === 0) return 0;
+	return (wins / total) * Math.log2(1 + total);
+}
+
 export default function HourlyHeatmap({ data }: { data: HourlyStats | null }) {
 	const [mode, setMode] = useState<Mode>("winrate");
 
@@ -32,6 +37,17 @@ export default function HourlyHeatmap({ data }: { data: HourlyStats | null }) {
 	const maxTotal = Math.max(...hours.map((h) => h.total), 1);
 	const am = hours.slice(0, 12);
 	const pm = hours.slice(12, 24);
+
+	// Find best hour (weighted win rate)
+	let bestHour = -1;
+	let bestScore = 0;
+	for (const h of hours) {
+		const score = bestHourScore(h.wins, h.total);
+		if (score > bestScore) {
+			bestScore = score;
+			bestHour = h.hour;
+		}
+	}
 
 	function cellColor(stat: { wins: number; total: number }): string {
 		if (stat.total === 0) return "transparent";
@@ -50,8 +66,9 @@ export default function HourlyHeatmap({ data }: { data: HourlyStats | null }) {
 						const hasData = stat.total > 0;
 						const wr = hasData ? Math.round((stat.wins / stat.total) * 100) : 0;
 						const bg = cellColor(stat);
+						const isBest = stat.hour === bestHour;
 						const title = hasData
-							? `${stat.hour}h: ${stat.total} batalhas — ${stat.wins}W / ${stat.total - stat.wins}L (${wr}%)`
+							? `${stat.hour}h: ${stat.total} batalhas — ${stat.wins}W / ${stat.total - stat.wins}L (${wr}%)${isBest ? " — Melhor horario para jogar!" : ""}`
 							: `${stat.hour}h: sem dados`;
 
 						return (
@@ -61,10 +78,17 @@ export default function HourlyHeatmap({ data }: { data: HourlyStats | null }) {
 								className="rounded aspect-square flex flex-col items-center justify-center relative"
 								style={{
 									background: hasData ? bg : undefined,
+									outline: isBest ? "2px solid gold" : undefined,
+									outlineOffset: isBest ? "-1px" : undefined,
 								}}
 							>
 								{!hasData && (
 									<div className="absolute inset-0 rounded bg-base-300/50" />
+								)}
+								{isBest && (
+									<span className="absolute -top-1.5 -right-1.5 text-[10px] leading-none z-10" title="Melhor horario para jogar!">
+										&#11088;
+									</span>
 								)}
 								<span
 									className="text-[10px] leading-none"

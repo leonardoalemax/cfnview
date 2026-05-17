@@ -34,9 +34,20 @@ export default function WeeklyHeatmap({ data }: { data: WeeklyHeatmapData | null
 
 	// Find max battles across all cells for battles mode scaling
 	let maxTotal = 0;
-	for (const day of days) {
-		for (const h of day) {
+	let bestDay = -1;
+	let bestHour = -1;
+	let bestScore = 0;
+	for (let d = 0; d < days.length; d++) {
+		for (const h of days[d]) {
 			if (h.total > maxTotal) maxTotal = h.total;
+			if (h.total > 0) {
+				const score = (h.wins / h.total) * Math.log2(1 + h.total);
+				if (score > bestScore) {
+					bestScore = score;
+					bestDay = d;
+					bestHour = h.hour;
+				}
+			}
 		}
 	}
 	if (maxTotal === 0) maxTotal = 1;
@@ -103,8 +114,9 @@ export default function WeeklyHeatmap({ data }: { data: WeeklyHeatmapData | null
 								const hasData = stat.total > 0;
 								const wr = hasData ? Math.round((stat.wins / stat.total) * 100) : 0;
 								const bg = cellColor(stat.wins, stat.total);
+								const isBest = dayIdx === bestDay && stat.hour === bestHour;
 								const title = hasData
-									? `${DAY_LABELS[dayIdx]} ${stat.hour}h: ${stat.total} batalhas — ${stat.wins}W / ${stat.total - stat.wins}L (${wr}%)`
+									? `${DAY_LABELS[dayIdx]} ${stat.hour}h: ${stat.total} batalhas — ${stat.wins}W / ${stat.total - stat.wins}L (${wr}%)${isBest ? " — Melhor momento para jogar!" : ""}`
 									: `${DAY_LABELS[dayIdx]} ${stat.hour}h: sem dados`;
 
 								return (
@@ -114,10 +126,17 @@ export default function WeeklyHeatmap({ data }: { data: WeeklyHeatmapData | null
 										className="h-5 rounded-sm flex items-center justify-center relative"
 										style={{
 											background: hasData ? bg : undefined,
+											outline: isBest ? "2px solid gold" : undefined,
+											outlineOffset: isBest ? "-1px" : undefined,
 										}}
 									>
 										{!hasData && (
 											<div className="absolute inset-0 rounded-sm bg-base-300/50" />
+										)}
+										{isBest && (
+											<span className="absolute -top-1 -right-1 text-[8px] leading-none z-10" title="Melhor momento para jogar!">
+												&#11088;
+											</span>
 										)}
 										{hasData && (
 											<span className="text-[9px] font-bold leading-none text-white/90">
