@@ -104,10 +104,10 @@ export default function PlayerSearch() {
 								className="flex items-center gap-3 w-full px-4 py-2 hover:bg-base-300 text-left transition-colors"
 								onClick={() => select(p)}
 							>
-								{p.character_tool_name && (
+								{p.favorite_character_tool_name && (
 									<img
-										src={`${SF6_BASE}/material/character/character_${p.character_tool_name}_l.png`}
-										alt={p.character_tool_name}
+										src={`${SF6_BASE}/material/character/character_${p.favorite_character_tool_name}_l.png`}
+										alt={p.favorite_character_tool_name}
 										className="w-8 h-8 object-contain shrink-0"
 									/>
 								)}

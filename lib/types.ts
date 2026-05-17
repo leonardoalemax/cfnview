@@ -149,12 +149,18 @@ export interface ReplayPage {
 	total_pages: number;
 }
 
-// ─── Player search index ─────────────────────────────────────────────────────
+// ─── Player ─────────────────────────────────────────────────────────────────
 
 export interface PlayerEntry {
 	fighter_id: string;
 	short_id: number;
-	character_tool_name: string;
+	platform_name: string;
+	platform_tool_name: string;
+	home_id: number;
+	favorite_character_tool_name: string;
+	favorite_character_name: string;
+	league_point: number;
+	league_rank: number;
 	updated_at: number;
 }
 
