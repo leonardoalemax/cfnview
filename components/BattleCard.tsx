@@ -43,26 +43,22 @@ function CardHeader({
 
 	return (
 		!compact && (
-			<div className='flex items-center justify-between gap-2 px-3 py-2 border-b border-base-300 flex-wrap'>
-				<span className='text-xs text-primary font-semibold tracking-wide'>
+			<div className='flex items-center justify-between gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 border-b border-base-300 flex-wrap'>
+				<span className='text-[10px] sm:text-xs text-primary font-semibold tracking-wide hidden sm:inline'>
 					Replay ID{" "}
 					<span className='text-base-content font-bold'>
 						{replay.replay_id}
 					</span>
 				</span>
 
-				<div className='flex flex-col items-center text-xs text-base-content/60 leading-tight'>
+				<div className='flex flex-col items-center text-[10px] sm:text-xs text-base-content/60 leading-tight'>
 					<span className='font-semibold text-base-content'>
 						{date}
-					</span>
-					<span>
-						Views &nbsp;
-						<span className='text-base-content/40'>0</span>
 					</span>
 				</div>
 				<span
 					className={clsx(
-						"badge badge-sm font-bold px-3 py-3 text-white",
+						"badge badge-xs sm:badge-sm font-bold px-2 sm:px-3 py-2 sm:py-3 text-white",
 						userId
 							? userWon ? "badge-success" : "badge-error"
 							: "badge-ghost",
@@ -86,13 +82,13 @@ function RoundResults({
 	const rounds = Math.max(p1Results.length, p2Results.length, 1);
 
 	return (
-		<div className='flex flex-col items-center justify-center gap-1 shrink-0 px-2'>
+		<div className='flex flex-col items-center justify-center gap-0.5 sm:gap-1 shrink-0 px-1 sm:px-2'>
 			{Array.from({ length: rounds }, (_, i) => {
 				const v1 = p1Results[i] ?? 0;
 				const v2 = p2Results[i] ?? 0;
 				return (
-					<div key={i} className='flex items-center gap-1'>
-						<div className='relative w-5 h-3'>
+					<div key={i} className='flex items-center gap-0.5 sm:gap-1'>
+						<div className='relative w-4 h-2.5 sm:w-5 sm:h-3'>
 							<Image
 								src={roundResultImg(v1, "l")}
 								alt=''
@@ -101,10 +97,10 @@ function RoundResults({
 								unoptimized
 							/>
 						</div>
-						<span className='text-[10px] text-base-content/40 w-6 text-center'>
+						<span className='text-[8px] sm:text-[10px] text-base-content/40 w-5 sm:w-6 text-center'>
 							R{i + 1}
 						</span>
-						<div className='relative w-5 h-3'>
+						<div className='relative w-4 h-2.5 sm:w-5 sm:h-3'>
 							<Image
 								src={roundResultImg(v2, "r")}
 								alt=''
@@ -144,16 +140,16 @@ function PlayerSide({
 					alt=''
 					width={compact ? 64 : 128}
 					height={compact ? 32 : 64}
-					className='object-contain'
+					className='object-contain w-12 sm:w-auto'
 					unoptimized
 				/>
 			</div>
 			<div
 				className={clsx(
-					"flex items-center gap-2",
+					"flex items-center gap-1 sm:gap-2",
 					isRight && "flex-row-reverse",
 				)}>
-				<span className='text-sm font-bold whitespace-nowrap'>
+				<span className='text-[10px] sm:text-sm font-bold whitespace-nowrap'>
 					{info.league_point.toLocaleString("pt-BR")} LP
 				</span>
 			</div>
@@ -164,23 +160,23 @@ function PlayerSide({
 		<Link
 			href={`/battlelog/${info.player.short_id}/stats`}
 			className={clsx(
-				"flex items-center gap-1 text-sm font-semibold min-w-0 hover:text-primary transition-colors",
+				"flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-sm font-semibold min-w-0 hover:text-primary transition-colors",
 				isRight && "flex-row-reverse",
 			)}>
 			<Image
 				src={controlImg(info.battle_input_type)}
 				alt=''
-				width={compact ? 16 : 32}
-				height={compact ? 16 : 32}
-				className='object-contain'
+				width={16}
+				height={16}
+				className='object-contain w-3 h-3 sm:w-4 sm:h-4'
 				unoptimized
 			/>
-			<span className='relative w-4 h-4 shrink-0 inline-block'>
+			<span className='relative w-3 h-3 sm:w-4 sm:h-4 shrink-0 inline-block'>
 				<Image
 					src={platformImg(info.player.platform_tool_name)}
 					alt=''
-					width={compact ? 16 : 32}
-					height={compact ? 16 : 32}
+					width={16}
+					height={16}
 					className='object-contain'
 					unoptimized
 				/>
@@ -198,7 +194,7 @@ function PlayerSide({
 			<CharacterIcon
 				toolName={info.playing_character_tool_name}
 				side={charSide}
-				className='sm:w-36 sm:h-36 w-16 h-16 object-bottom'
+				className='w-14 h-14 sm:w-36 sm:h-36 object-bottom'
 			/>
 		</div>
 	);
@@ -206,7 +202,7 @@ function PlayerSide({
 	const resultLabel = (
 		<span
 			className={clsx(
-				"text-base font-black tracking-widest",
+				"text-[10px] sm:text-base font-black tracking-widest",
 				isWinner ? "text-success" : "text-base-content/40",
 			)}>
 			{isWinner ? "WINS" : "LOSES"}
@@ -216,13 +212,13 @@ function PlayerSide({
 	return (
 		<div
 			className={clsx(
-				"flex items-center gap-3 flex-1 min-w-0",
+				"flex items-center gap-1 sm:gap-3 flex-1 min-w-0",
 				isRight && "flex-row-reverse",
 			)}>
 			{/* Info column */}
 			<div
 				className={clsx(
-					"flex flex-col gap-1.5 min-w-0 flex-1",
+					"flex flex-col gap-0.5 sm:gap-1.5 min-w-0 flex-1",
 					isRight ? "items-end" : "items-start",
 				)}>
 				{nameRow}
@@ -230,7 +226,7 @@ function PlayerSide({
 			</div>
 
 			{/* Portrait + result */}
-			<div className='flex flex-col items-center gap-1'>
+			<div className='flex flex-col items-center gap-0.5 sm:gap-1'>
 				{portrait}
 				{resultLabel}
 			</div>
@@ -262,7 +258,7 @@ export default function BattleCard({
 	const userWon = isP1 ? p1wins : p2wins;
 
 	const battleRow = (
-		<div className='flex items-center gap-2 px-3 py-3 flex-1'>
+		<div className='flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 sm:py-3 flex-1'>
 			<PlayerSide
 				info={replay.player1_info}
 				side='left'

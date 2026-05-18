@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import BattleCard from "./BattleCard";
 import { Tab, TabList } from "./ui/Tabs";
 import type { CharacterOption, ReplayPage, SF6Replay } from "../lib/types";
@@ -44,11 +45,15 @@ interface Props {
 }
 
 export default function HistoryList({ userId, userName, initialReplays, totalPages, initialCharacters = [] }: Props) {
+	const router = useRouter();
+	const searchParams = useSearchParams();
+
+	// Read filters from URL
+	const urlCharacter = searchParams.get("character") ?? "";
+	const urlBattleType = Number(searchParams.get("type") ?? "0");
 	const [characters, setCharacters] = useState<CharacterOption[]>(initialCharacters);
-	const [character, setCharacter] = useState("");
-	const [dateFrom, setDateFrom] = useState("");
-	const [dateTo, setDateTo] = useState("");
-	const [battleType, setBattleType] = useState(0);
+	const [character, setCharacter] = useState(urlCharacter);
+	const [battleType, setBattleType] = useState(urlBattleType);
 
 	const [replays, setReplays] = useState<SF6Replay[]>(initialReplays);
 	const [page, setPage] = useState(2);
@@ -57,6 +62,25 @@ export default function HistoryList({ userId, userName, initialReplays, totalPag
 	const [loading, setLoading] = useState(false);
 	const sentinelRef = useRef<HTMLDivElement>(null);
 	const loadingRef = useRef(false);
+
+	// Sync filters to URL
+	const updateURL = useCallback((char: string, type: number) => {
+		const params = new URLSearchParams();
+		if (char) params.set("character", char);
+		if (type !== 0) params.set("type", String(type));
+		const qs = params.toString();
+		router.replace(`/battlelog/${userId}/history${qs ? `?${qs}` : ""}`, { scroll: false });
+	}, [router, userId]);
+
+	function handleCharacter(value: string) {
+		setCharacter(value);
+		updateURL(value, battleType);
+	}
+
+	function handleBattleType(value: number) {
+		setBattleType(value);
+		updateURL(character, value);
+	}
 
 	// Fetch characters if not pre-loaded
 	useEffect(() => {
@@ -73,7 +97,7 @@ export default function HistoryList({ userId, userName, initialReplays, totalPag
 		setLoading(true);
 		loadingRef.current = true;
 
-		fetchReplays(userId, 1, character, dateFrom, dateTo, battleType)
+		fetchReplays(userId, 1, character, "", "", battleType)
 			.then((data) => {
 				if (!cancelled) {
 					setReplays(data.replays);
@@ -91,7 +115,7 @@ export default function HistoryList({ userId, userName, initialReplays, totalPag
 			});
 
 		return () => { cancelled = true; };
-	}, [userId, character, dateFrom, dateTo, battleType]);
+	}, [userId, character, battleType]);
 
 	// Infinite scroll
 	useEffect(() => {
@@ -104,7 +128,7 @@ export default function HistoryList({ userId, userName, initialReplays, totalPag
 			loadingRef.current = true;
 			setLoading(true);
 			try {
-				const data = await fetchReplays(userId, page, character, dateFrom, dateTo, battleType);
+				const data = await fetchReplays(userId, page, character, "", "", battleType);
 				if (!cancelled) {
 					setReplays((prev) => [...prev, ...data.replays]);
 					setHasMore(data.page < data.total_pages);
@@ -132,7 +156,7 @@ export default function HistoryList({ userId, userName, initialReplays, totalPag
 			observer.disconnect();
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [page, hasMore, userId, character, dateFrom, dateTo, battleType]);
+	}, [page, hasMore, userId, character, battleType]);
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -157,9 +181,11 @@ export default function HistoryList({ userId, userName, initialReplays, totalPag
 						{[
 							{ value: 0, label: "Todos" },
 							{ value: 1, label: "Ranked" },
-							{ value: 6, label: "Custom Room" },
+							{ value: 2, label: "Casual" },
+							{ value: 4, label: "Custom Room" },
+							{ value: 3, label: "Battle Hub" },
 						].map(({ value, label }) => (
-							<Tab key={value} active={battleType === value} onClick={() => setBattleType(value)}>
+							<Tab key={value} active={battleType === value} onClick={() => handleBattleType(value)}>
 								{label}
 							</Tab>
 						))}
@@ -171,9 +197,9 @@ export default function HistoryList({ userId, userName, initialReplays, totalPag
 					<div>
 						<div className="text-xs text-base-content/50 mb-2">Personagem</div>
 						<TabList scrollable>
-							<Tab active={character === ""} onClick={() => setCharacter("")}>Todos</Tab>
+							<Tab active={character === ""} onClick={() => handleCharacter("")}>Todos</Tab>
 							{characters.map((c) => (
-								<Tab key={c.tool_name} active={character === c.tool_name} onClick={() => setCharacter(c.tool_name)} className="px-2">
+								<Tab key={c.tool_name} active={character === c.tool_name} onClick={() => handleCharacter(c.tool_name)} className="px-2">
 									<img src={characterFace(c.tool_name)} alt={c.name} className="w-6 h-6 rounded-full object-cover" title={c.name} />
 									<span className="ml-1 hidden sm:inline">{c.name}</span>
 								</Tab>
@@ -182,36 +208,7 @@ export default function HistoryList({ userId, userName, initialReplays, totalPag
 					</div>
 				)}
 
-				{/* Date range filter */}
-				<div className="flex flex-wrap gap-3 items-end">
-					<div className="flex flex-col gap-1">
-						<label className="text-xs text-base-content/50">De</label>
-						<input
-							type="date"
-							className="input input-sm input-bordered"
-							value={dateFrom}
-							onChange={(e) => setDateFrom(e.target.value)}
-						/>
-					</div>
-					<div className="flex flex-col gap-1">
-						<label className="text-xs text-base-content/50">Até</label>
-						<input
-							type="date"
-							className="input input-sm input-bordered"
-							value={dateTo}
-							onChange={(e) => setDateTo(e.target.value)}
-						/>
-					</div>
-					{(dateFrom || dateTo) && (
-						<button
-							className="btn btn-sm btn-ghost"
-							onClick={() => { setDateFrom(""); setDateTo(""); }}
-						>
-							Limpar datas
-						</button>
-					)}
 				</div>
-			</div>
 
 			{/* Replay list */}
 			<ul className="flex flex-col gap-3">
