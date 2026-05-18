@@ -6,6 +6,7 @@ import HourlyHeatmap from "./HourlyHeatmap";
 import WeeklyHeatmap from "./WeeklyHeatmap";
 import CalendarHeatmap from "./CalendarHeatmap";
 import WeekdayChart from "./WeekdayChart";
+import { Tab, TabList } from "./ui/Tabs";
 
 type Mode = "winrate" | "battles";
 
@@ -24,20 +25,14 @@ export default function HeatmapGrid({ hourlyStats, weeklyHeatmap, calendarData }
 	return (
 		<div className="flex flex-col gap-4">
 			{/* Unified toggle */}
-			<div className="flex gap-1">
-				<button
-					className={`btn btn-sm ${mode === "winrate" ? "btn-primary" : "btn-ghost"}`}
-					onClick={() => setMode("winrate")}
-				>
-					Win Rate
-				</button>
-				<button
-					className={`btn btn-sm ${mode === "battles" ? "btn-primary" : "btn-ghost"}`}
-					onClick={() => setMode("battles")}
-				>
+			<TabList>
+				<Tab active={mode === "battles"} onClick={() => setMode("battles")}>
 					Batalhas
-				</button>
-			</div>
+				</Tab>
+				<Tab active={mode === "winrate"} onClick={() => setMode("winrate")}>
+					Win Rate
+				</Tab>
+			</TabList>
 
 			{/* Two columns on desktop: left stacks 3 short panels, right has the tall weekly */}
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4">

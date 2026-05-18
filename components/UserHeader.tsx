@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { platformImg, rankImg } from "../lib/types";
 import CharacterIcon from "./ui/CharacterIcon";
 import type { SF6FighterBannerInfo } from "../lib/types";
@@ -6,7 +7,7 @@ import StatCard from "./ui/StatCard";
 import KudosPie from "./KudosPie";
 import SelectedCharacterBanner from "./ui/SelectedCharacterBanner";
 
-export default function UserHeader({ info }: { info: SF6FighterBannerInfo }) {
+export default function UserHeader({ info, userId }: { info: SF6FighterBannerInfo; userId: string }) {
 	const { personal_info, favorite_character_league_info: league } = info;
 	const playPoint = info.favorite_character_play_point;
 
@@ -28,45 +29,21 @@ export default function UserHeader({ info }: { info: SF6FighterBannerInfo }) {
 					</span>
 				</div>
 
+				<Link
+					href={`/battlelog/${userId}/history`}
+					className='btn btn-sm btn-ghost gap-1 text-xs text-base-content/60 shrink-0'>
+					<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth={2} strokeLinecap='round' strokeLinejoin='round' className='w-4 h-4'>
+						<polyline points='12 8 12 12 14 14' />
+						<circle cx='12' cy='12' r='10' />
+					</svg>
+					Histórico
+				</Link>
+
 				<KudosPie
 					fightingGround={playPoint.fighting_ground}
 					worldTour={playPoint.world_tour}
 					battleHub={playPoint.battle_hub}
 				/>
-			</div>
-
-			<div className='sf6-panel py-2 gap-4 px-2 mb-4 flex flex-col'>
-				<h2>Ultimo boneco usado</h2>
-				<div className='flex flex-row gap-4'>
-					<div className='flex flex-col sm:flex-row gap-4 items-start'>
-						<CharacterIcon
-							toolName={info.favorite_character_tool_name}
-						/>
-					</div>
-					<div className='flex flex-col min-h-full w-full gap-4 justify-between items-start'>
-						<p className='font-bold sm:text-xl text-sm tracking-wider'>
-							{info.favorite_character_alpha}
-						</p>
-						<SelectedCharacterBanner
-							plateName={info.title_data.title_data_plate_name}
-							value={info.title_data.title_data_val}
-						/>
-					</div>
-					<div className='flex flex-col min-w-24'>
-						<div className='relative h-10 sm:h-16'>
-							<Image
-								src={rankImg(league.league_rank)}
-								alt={league.league_rank_info.league_rank_name}
-								fill
-								className='object-contain'
-								unoptimized
-							/>
-						</div>
-						<span className='font-bold text-center'>
-							{league.league_point.toLocaleString("pt-BR")} LP
-						</span>
-					</div>
-				</div>
 			</div>
 		</>
 	);

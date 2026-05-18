@@ -24,11 +24,14 @@ function roundResultImg(value: number, side: "l" | "r"): string {
 function CardHeader({
 	compact = false,
 	replay,
-	p1wins,
+	userId,
+	userWon,
 }: {
 	compact?: boolean;
 	replay: SF6Replay;
 	p1wins: boolean;
+	userId?: string;
+	userWon: boolean;
 }) {
 	const date = new Date(replay.uploaded_at * 1000).toLocaleString("pt-BR", {
 		day: "2-digit",
@@ -60,7 +63,9 @@ function CardHeader({
 				<span
 					className={clsx(
 						"badge badge-sm font-bold px-3 py-3 text-white",
-						p1wins ? "badge-error" : "badge-success",
+						userId
+							? userWon ? "badge-success" : "badge-error"
+							: "badge-ghost",
 					)}>
 					{replay.replay_battle_type_name}
 				</span>
@@ -238,15 +243,23 @@ function PlayerSide({
 interface BattleCardProps {
 	replay: SF6Replay;
 	compact?: boolean;
+	userId?: string;
 }
 
 export default function BattleCard({
 	replay,
 	compact = false,
+	userId,
 }: BattleCardProps) {
 	const winner = getWinner(replay);
 	const p1wins = winner === 1;
 	const p2wins = winner === 2;
+
+	// Determine if the current user won
+	const isP1 = userId
+		? String(replay.player1_info.player.short_id) === userId
+		: false;
+	const userWon = isP1 ? p1wins : p2wins;
 
 	const battleRow = (
 		<div className='flex items-center gap-2 px-3 py-3 flex-1'>
@@ -272,7 +285,7 @@ export default function BattleCard({
 	return (
 		<div className={styles.BattleCard}>
 			<div className={styles.BattleCardBody}>
-				<CardHeader compact={compact} replay={replay} p1wins={p1wins} />
+				<CardHeader compact={compact} replay={replay} p1wins={p1wins} userId={userId} userWon={userWon} />
 				{battleRow}
 			</div>
 		</div>

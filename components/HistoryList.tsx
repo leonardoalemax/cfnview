@@ -37,12 +37,13 @@ async function fetchReplays(
 
 interface Props {
 	userId: string;
+	userName?: string;
 	initialReplays: SF6Replay[];
 	totalPages: number;
 	initialCharacters?: CharacterOption[];
 }
 
-export default function HistoryList({ userId, initialReplays, totalPages, initialCharacters = [] }: Props) {
+export default function HistoryList({ userId, userName, initialReplays, totalPages, initialCharacters = [] }: Props) {
 	const [characters, setCharacters] = useState<CharacterOption[]>(initialCharacters);
 	const [character, setCharacter] = useState("");
 	const [dateFrom, setDateFrom] = useState("");
@@ -135,6 +136,18 @@ export default function HistoryList({ userId, initialReplays, totalPages, initia
 
 	return (
 		<div className="flex flex-col gap-4">
+			{/* Breadcrumb */}
+			<div className="breadcrumbs text-sm">
+				<ul>
+					<li>
+						<a href={`/battlelog/${userId}/stats`}>
+							{userName || userId}
+						</a>
+					</li>
+					<li>Histórico</li>
+				</ul>
+			</div>
+
 			{/* Filters */}
 			<div className="card bg-base-200 p-4 flex flex-col gap-4">
 				{/* Battle type filter */}
@@ -204,7 +217,7 @@ export default function HistoryList({ userId, initialReplays, totalPages, initia
 			<ul className="flex flex-col gap-3">
 				{replays.map((replay) => (
 					<li key={replay.replay_id}>
-						<BattleCard replay={replay} />
+						<BattleCard replay={replay} userId={userId} />
 					</li>
 				))}
 			</ul>

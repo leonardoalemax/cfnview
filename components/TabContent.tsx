@@ -1,13 +1,12 @@
 import CharacterRanks from "./CharacterRanks";
 import HeatmapGrid from "./HeatmapGrid";
 import HistoryList from "./HistoryList";
-import LPChart from "./LPChart";
-import OpponentChart from "./OpponentChart";
+import PlayerAnalysis from "./PlayerAnalysis";
 import UserHeader from "./UserHeader";
 import WinLossChart from "./WinLossChart";
 import type { CalendarStat, CharacterOption, CharacterRankStat, CharStat, HourlyStats, LPHistory, SF6FighterBannerInfo, SF6Replay, WeeklyHeatmap as WeeklyHeatmapType, WinLossStat } from "../lib/types";
 
-const VALID_TABS = ["stats", "opponents", "history"] as const;
+const VALID_TABS = ["stats", "history"] as const;
 type Tab = (typeof VALID_TABS)[number];
 
 interface Props {
@@ -47,16 +46,17 @@ export default function TabContent({
 }: Props) {
 	if (tab === "stats") return (
 		<div className="flex flex-col gap-4">
-			{bannerInfo && <UserHeader info={bannerInfo} />}
+			{bannerInfo && <UserHeader info={bannerInfo} userId={userId} />}
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<WinLossChart data={statsData} />
 				<CharacterRanks data={characterRanks} />
 			</div>
-			<LPChart
+			<PlayerAnalysis
 				userId={userId}
 				defaultCharacter={defaultCharacter}
-				initialData={lpHistory}
+				initialLPData={lpHistory}
 				initialCharacters={lpCharacters}
+				initialOpponents={opponentsData}
 			/>
 			<HeatmapGrid
 				hourlyStats={hourlyStats}
@@ -65,6 +65,5 @@ export default function TabContent({
 			/>
 		</div>
 	);
-	if (tab === "opponents") return <OpponentChart data={opponentsData} userId={userId} characters={lpCharacters} />;
-	return <HistoryList userId={userId} initialReplays={initialReplays} totalPages={totalPages} initialCharacters={historyCharacters} />;
+	return <HistoryList userId={userId} userName={bannerInfo?.personal_info?.fighter_id} initialReplays={initialReplays} totalPages={totalPages} initialCharacters={historyCharacters} />;
 }

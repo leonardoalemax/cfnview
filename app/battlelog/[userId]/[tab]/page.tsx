@@ -36,7 +36,8 @@ export default async function BattlelogPage({ params }: Props) {
 
 	if (!VALID_TABS.includes(tab as Tab)) return notFound();
 
-	const currentTab = tab as Tab;
+	// opponents content is now merged into stats
+	const currentTab = (tab === "opponents" ? "stats" : tab) as "stats" | "history";
 
 	let bannerInfo: SF6FighterBannerInfo | null = null;
 	let initialReplays: SF6Replay[] = [];
@@ -55,18 +56,13 @@ export default async function BattlelogPage({ params }: Props) {
 	try {
 		const isStats = currentTab === "stats";
 
-		const isOpponents = currentTab === "opponents";
+		const tabFetch = isStats
+			? get<WinLossStat>(`/v1/battlelog/${userId}/stats`)
+			: get<ReplayPage>(
+					`/v1/battlelog/${userId}/replays?page=1&limit=20`,
+				);
 
-		const tabFetch =
-			currentTab === "history"
-				? get<ReplayPage>(
-						`/v1/battlelog/${userId}/replays?page=1&limit=20`,
-					)
-				: currentTab === "stats"
-					? get<WinLossStat>(`/v1/battlelog/${userId}/stats`)
-					: get<CharStat[]>(`/v1/battlelog/${userId}/opponents`);
-
-		const [profile, tabData, hourlyData, calData, ranksData, charsData, weeklyData] =
+		const [profile, tabData, hourlyData, calData, ranksData, charsData, weeklyData, oppData] =
 			await Promise.all([
 				get<SF6FighterBannerInfo>(`/v1/battlelog/${userId}/profile`),
 				tabFetch,
@@ -81,13 +77,16 @@ export default async function BattlelogPage({ params }: Props) {
 							`/v1/battlelog/${userId}/character-ranks`,
 						)
 					: Promise.resolve(null),
-				isStats || isOpponents
+				isStats
 					? get<CharacterOption[]>(
 							`/v1/battlelog/${userId}/characters`,
 						)
 					: Promise.resolve(null),
 				isStats
 					? get<WeeklyHeatmap>(`/v1/battlelog/${userId}/weekly`)
+					: Promise.resolve(null),
+				isStats
+					? get<CharStat[]>(`/v1/battlelog/${userId}/opponents`)
 					: Promise.resolve(null),
 			]);
 
@@ -110,12 +109,14 @@ export default async function BattlelogPage({ params }: Props) {
 			weeklyHeatmap = weeklyData as WeeklyHeatmap | null;
 			calendarData = calData as CalendarStat | null;
 			characterRanks = ranksData as CharacterRankStat[] | null;
+			opponentsData = oppData as CharStat[] | null;
 			lpCharacters = (charsData as CharacterOption[] | null) ?? [];
-			// default to profile's favorite character, or first played character
-			const profileChar = bannerInfo?.favorite_character_tool_name ?? "";
+			// default to character with highest LP (ranking)
+			const topRank = characterRanks
+				? [...characterRanks].sort((a, b) => b.lp - a.lp)[0]
+				: null;
 			defaultCharacter =
-				lpCharacters.find((c) => c.tool_name === profileChar)
-					?.tool_name ??
+				topRank?.tool_name ??
 				lpCharacters[0]?.tool_name ??
 				"";
 			if (defaultCharacter) {
@@ -127,9 +128,6 @@ export default async function BattlelogPage({ params }: Props) {
 					// non-fatal
 				}
 			}
-		} else if (currentTab === "opponents") {
-			opponentsData = tabData as CharStat[];
-			lpCharacters = (charsData as CharacterOption[] | null) ?? [];
 		}
 	} catch (err) {
 		console.error("[page] fetch error:", err);
