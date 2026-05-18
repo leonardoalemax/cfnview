@@ -13,7 +13,7 @@ export default function UserHeader({ info, userId }: { info: SF6FighterBannerInf
 
 	return (
 		<>
-			<div className='sf6-panel py-2 gap-4 px-4 mb-4 flex min-[320px]:flex-row flex-col '>
+			<div className='sf6-panel py-2 gap-4 px-4 mb-4 flex min-[320px]:flex-row flex-col items-center'>
 				<div className='flex items-center w-full gap-2'>
 					<span className='relative w-4 h-4 shrink-0'>
 						<Image

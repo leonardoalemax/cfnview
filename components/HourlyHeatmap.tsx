@@ -27,10 +27,21 @@ function bestHourScore(wins: number, total: number): number {
 	return (wins / total) * Math.log2(1 + total);
 }
 
+/** Shift hours array by local timezone offset (server sends UTC) */
+function shiftToLocal(hours: HourlyStats["hours"]): HourlyStats["hours"] {
+	const offsetHours = -(new Date().getTimezoneOffset() / 60);
+	const shifted = new Array(24);
+	for (let i = 0; i < 24; i++) {
+		const srcIdx = ((i - offsetHours) % 24 + 24) % 24;
+		shifted[i] = { ...hours[srcIdx], hour: i };
+	}
+	return shifted;
+}
+
 export default function HourlyHeatmap({ data, mode }: { data: HourlyStats | null; mode: Mode }) {
 	if (!data) return null;
 
-	const hours = data.hours;
+	const hours = shiftToLocal(data.hours);
 	const maxTotal = Math.max(...hours.map((h) => h.total), 1);
 	const am = hours.slice(0, 12);
 	const pm = hours.slice(12, 24);

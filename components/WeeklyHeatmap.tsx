@@ -24,10 +24,30 @@ function battlesColor(total: number, maxBattles: number): string {
 	return `hsl(140, ${Math.round(s)}%, ${Math.round(l)}%)`;
 }
 
+/** Shift weekly grid by local timezone offset (server sends UTC).
+ *  Hours that cross midnight boundaries move to the adjacent day. */
+function shiftToLocal(days: WeeklyHeatmapData["days"]): WeeklyHeatmapData["days"] {
+	const offsetHours = -(new Date().getTimezoneOffset() / 60);
+	const result: WeeklyHeatmapData["days"] = Array.from({ length: 7 }, () =>
+		Array.from({ length: 24 }, (_, h) => ({ hour: h, wins: 0, total: 0 }))
+	) as WeeklyHeatmapData["days"];
+
+	for (let d = 0; d < 7; d++) {
+		for (let h = 0; h < 24; h++) {
+			const localH = h + offsetHours;
+			const newH = ((localH % 24) + 24) % 24;
+			const dayShift = localH < 0 ? -1 : localH >= 24 ? 1 : 0;
+			const newD = ((d + dayShift) % 7 + 7) % 7;
+			result[newD][newH] = { ...days[d][h], hour: newH };
+		}
+	}
+	return result;
+}
+
 export default function WeeklyHeatmap({ data, mode }: { data: WeeklyHeatmapData | null; mode: Mode }) {
 	if (!data) return null;
 
-	const days = data.days;
+	const days = shiftToLocal(data.days);
 
 	let maxTotal = 0;
 	let bestDay = -1;

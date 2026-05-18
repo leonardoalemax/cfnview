@@ -49,7 +49,7 @@ export default function TabContent({
 			{bannerInfo && <UserHeader info={bannerInfo} userId={userId} />}
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<WinLossChart data={statsData} />
-				<CharacterRanks data={characterRanks} />
+				<CharacterRanks data={characterRanks} userId={userId} />
 			</div>
 			<PlayerAnalysis
 				userId={userId}

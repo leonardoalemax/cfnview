@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import CharacterIcon from "./CharacterIcon";
 const API_BASE = process.env.NEXT_PUBLIC_GO_API_URL ?? "";
@@ -11,6 +12,7 @@ interface Profile {
 }
 
 export default function AppHeader() {
+	const router = useRouter();
 	const [userId, setUserId] = useState<string | null>(null);
 	const [profile, setProfile] = useState<Profile | null>(null);
 
@@ -36,6 +38,7 @@ export default function AppHeader() {
 		localStorage.removeItem("cfnview_user_id");
 		setUserId(null);
 		setProfile(null);
+		router.push("/");
 	}
 
 	const hasAvatar = !!profile?.characterToolName;
